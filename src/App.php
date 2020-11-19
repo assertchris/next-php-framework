@@ -115,7 +115,7 @@ class App extends Container
                 }
 
                 if ($result[1]['type'] === 'page') {
-                    $content = $result[1]['factory']();
+                    $content = $result[1]['factory']($request, $response);
 
                     if (is_file("{$path}/_document.php")) {
                         $document = require "{$path}/_document.php";
