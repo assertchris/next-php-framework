@@ -1,9 +1,9 @@
 <?php
 
-namespace Next\Database;
+namespace Next;
 
 use Illuminate\Database\Capsule\Manager as IlluminateManager;
 
-class Manager extends IlluminateManager
+class Database extends IlluminateManager
 {
 }

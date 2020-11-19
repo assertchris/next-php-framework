@@ -4,16 +4,17 @@ namespace Next;
 
 use Closure;
 use Exception;
-use FastRoute\Dispatcher;
-use FastRoute\RouteCollector;
+use FastRoute;
 use Illuminate\Container\Container;
-use Next\Database\Manager;
+use Next\Database;
 use Next\Http\Request;
 use Next\Http\Response;
-use function FastRoute\simpleDispatcher;
+use Whoops;
 
 class App extends Container
 {
+    private Whoops\Run $whoops;
+
     public function __construct(array $config = [])
     {
         static::setInstance($this);
@@ -32,6 +33,10 @@ class App extends Container
         if (isset($config['database'])) {
             $this->configureDatabase($config['database']);
         }
+
+        if (isset($config['env']) && $config['env'] === 'dev') {
+            $this->configureWhoops();
+        }
     }
 
     private function configurePaths(array $paths = [])
@@ -41,11 +46,15 @@ class App extends Container
         if (isset($paths['migrations'])) {
             $this->instance('path.migrations', $paths['migrations']);
         }
+
+        if (isset($paths['log'])) {
+            $this->instance('path.log', $paths['log']);
+        }
     }
 
     private function configureDatabase(array $database = [])
     {
-        $capsule = new Manager();
+        $capsule = new Database();
         $capsule->addConnection($database);
         $capsule->bootEloquent();
         $capsule->setAsGlobal();
@@ -58,10 +67,22 @@ class App extends Container
         $request = Request::capture();
         $response = Response::create();
 
+        if ($request->expectsJson()) {
+            $this->whoops->pushHandler(new Whoops\Handler\JsonResponseHandler());
+        } else {
+            $this->whoops->pushHandler(new Whoops\Handler\PrettyPageHandler());
+        }
+
         $this->instance('request', $request);
         $this->instance('response', $response);
 
         $this->route($request, $response);
+    }
+
+    private function configureWhoops()
+    {
+        $this->whoops = new Whoops\Run();
+        $this->whoops->register();
     }
 
     private function route(Request $request, Response $response)
@@ -71,7 +92,7 @@ class App extends Container
         $apiFiles = files("{$path}/api/*.php");
         $pageFiles = array_diff($allFiles, $apiFiles);
 
-        $dispatcher = simpleDispatcher(function (RouteCollector $collector) use ($path, $apiFiles, $pageFiles) {
+        $dispatcher = FastRoute\simpleDispatcher(function (FastRoute\RouteCollector $collector) use ($path, $apiFiles, $pageFiles) {
             foreach ($apiFiles as $apiFile) {
                 $apiFilePath = str_replace($path, '', dirname($apiFile));
                 $apiFileName = basename($apiFile, '.php');
@@ -101,15 +122,15 @@ class App extends Container
         $result = $dispatcher->dispatch($httpMethod, $httpPath);
 
         switch ($result[0]) {
-            case Dispatcher::NOT_FOUND:
+            case FastRoute\Dispatcher::NOT_FOUND:
                 dd('not found');
                 break;
 
-            case Dispatcher::METHOD_NOT_ALLOWED:
+            case FastRoute\Dispatcher::METHOD_NOT_ALLOWED:
                 dd('method not allowed');
                 break;
 
-            case Dispatcher::FOUND:
+            case FastRoute\Dispatcher::FOUND:
                 if ($result[1]['type'] === 'api') {
                     $result[1]['factory']($request, $response);
                 }

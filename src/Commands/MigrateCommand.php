@@ -2,7 +2,7 @@
 
 namespace Next\Commands;
 
-use Next\Database\Manager;
+use Next\Database;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -18,8 +18,8 @@ class MigrateCommand extends Command
 
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-        if (!Manager::schema()->hasTable('migrations')) {
-            Manager::schema()->create('migrations', function($table) {
+        if (!Database::schema()->hasTable('migrations')) {
+            Database::schema()->create('migrations', function($table) {
                 $table->string('name')->unique();
             });
         }
@@ -30,14 +30,14 @@ class MigrateCommand extends Command
         foreach ($migrations as $migration) {
             $name = basename($migration, '.php');
         
-            if (Manager::table('migrations')->where('name', $name)->first()) {
+            if (Database::table('migrations')->where('name', $name)->first()) {
                 continue;
             }
         
             $runner = require $migration;
             $runner();
         
-            Manager::table('migrations')->insert(['name' => $name]);
+            Database::table('migrations')->insert(['name' => $name]);
         }
 
         return Command::SUCCESS;
