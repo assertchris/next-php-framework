@@ -2,8 +2,8 @@
 
 namespace Next\Http;
 
-use Symfony\Component\HttpFoundation\Request as SymfonyRequest;
+use Illuminate\Http\Request as IlluminateRequest;
 
-class Request extends SymfonyRequest
+class Request extends IlluminateRequest
 {
 }

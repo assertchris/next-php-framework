@@ -2,20 +2,15 @@
 
 namespace Next\Http;
 
-use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
+use Illuminate\Http\Response as IlluminateResponse;
 
-class Response extends SymfonyResponse
+class Response extends IlluminateResponse
 {
-    public function status(int $code): static
-    {
-        $this->setStatus($code);
-        return $this;
-    }
-
-    public function json(array $data = null)
+    public function json(array $data = null, ?int $status = 200)
     {
         $this->headers->set('Content-Type', 'application/json');
         $this->setContent(json_encode($data));
+        $this->setStatusCode($status);
         $this->send();
     }
 }

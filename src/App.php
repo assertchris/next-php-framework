@@ -3,31 +3,63 @@
 namespace Next;
 
 use Closure;
+use Exception;
 use FastRoute\Dispatcher;
 use FastRoute\RouteCollector;
-use Pimple\Container;
+use Illuminate\Container\Container;
+use Next\Database\Manager;
 use Next\Http\Request;
 use Next\Http\Response;
 use function FastRoute\simpleDispatcher;
 
 class App extends Container
 {
-    public static $instance;
-
-    public function __construct()
+    public function __construct(array $config = [])
     {
-        static::$instance = $this;
+        static::setInstance($this);
+
+        $this->configure($config);
     }
 
-    public function run()
+    private function configure(array $config = [])
     {
-        $request = Request::createFromGlobals();
-        $request->enableHttpMethodParameterOverride();
+        if (empty($config['paths']) || empty($config['paths']['pages'])) {
+            throw new Exception('You must define paths.pages');
+        } else {
+            $this->configurePaths($config['paths']);
+        }
 
+        if (isset($config['database'])) {
+            $this->configureDatabase($config['database']);
+        }
+    }
+
+    private function configurePaths(array $paths = [])
+    {
+        $this->instance('path.pages', $paths['pages']);
+
+        if (isset($paths['migrations'])) {
+            $this->instance('path.migrations', $paths['migrations']);
+        }
+    }
+
+    private function configureDatabase(array $database = [])
+    {
+        $capsule = new Manager();
+        $capsule->addConnection($database);
+        $capsule->bootEloquent();
+        $capsule->setAsGlobal();
+
+        $this->instance('db', $capsule);
+    }
+
+    public function serve()
+    {
+        $request = Request::capture();
         $response = Response::create();
 
-        $this->bind('request', $request);
-        $this->bind('response', $response);
+        $this->instance('request', $request);
+        $this->instance('response', $response);
 
         $this->route($request, $response);
     }
@@ -96,20 +128,5 @@ class App extends Container
 
                 break;
         }
-    }
-
-    public function bind(string $key, $value)
-    {
-        $this[$key] = $value;
-    }
-
-    public function resolve(string $key)
-    {
-        return $this[$key];
-    }
-
-    public static function instance()
-    {
-        return static::$instance;
     }
 }
