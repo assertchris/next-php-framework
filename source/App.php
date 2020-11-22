@@ -60,6 +60,13 @@ class App extends \Illuminate\Container\Container
         $this->instance('request', $request);
         $this->instance('response', $response);
 
+        if (isset($this['config']['middleware'])) {
+            foreach ($this['config']['middleware'] as $middleware) {
+                $class = new $middleware();
+                $class->handle($this, $request, $response);
+            }
+        }
+
         $this->route($request, $response);
     }
 
