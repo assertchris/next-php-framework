@@ -2,11 +2,9 @@
 
 namespace Next\Http;
 
-use Illuminate\Http\Response as IlluminateResponse;
-
-class Response extends IlluminateResponse
+class Response extends \Illuminate\Http\Response
 {
-    public function json(array $data = null, ?int $status = 200)
+    public function json(array $data = null, int $status = 200)
     {
         $this->headers->set('Content-Type', 'application/json');
         $this->setContent(json_encode($data));

@@ -6,7 +6,7 @@ trait CannotBeCreated
 {
     private static $instance;
 
-    public static function instance()
+    public static function getInstance()
     {
         if (!isset(static::$instance)) {
             static::$instance = new static();
@@ -16,6 +16,10 @@ trait CannotBeCreated
     }
 
     private function __construct()
+    {
+    }
+
+    private function __clone()
     {
     }
 }

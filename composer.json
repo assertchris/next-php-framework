@@ -1,28 +1,28 @@
 {
-  "name": "next/framework",
-  "description": "Lightweight framework for PHP app development",
-  "require": {
-    "filp/whoops": "^2.9",
-    "illuminate/container": "^8.15",
-    "illuminate/database": "^8.15",
-    "illuminate/http": "^8.15",
-    "illuminate/log": "^8.15",
-    "nikic/fast-route": "^1.3",
-    "nunomaduro/collision": "^5.1",
-    "rakit/validation": "^1.4",
-    "symfony/http-foundation": "^5.1"
-  },
-  "autoload": {
-    "files": [
-      "./src/helpers.php"
-    ],
-    "psr-4": {
-      "Next\\": "src"
-    }
-  },
-  "config": {
-    "sort-packages": true
-  },
-  "minimum-stability": "dev",
-  "prefer-stable": true
+    "name": "next/framework",
+    "description": "Lightweight framework for PHP app development",
+    "require": {
+        "filp/whoops": "^2.9",
+        "illuminate/container": "^8.15",
+        "illuminate/database": "^8.15",
+        "illuminate/http": "^8.15",
+        "illuminate/log": "^8.15",
+        "nikic/fast-route": "^1.3",
+        "nunomaduro/collision": "^5.1",
+        "rakit/validation": "^1.4",
+        "symfony/cache": "^5.1"
+    },
+    "autoload": {
+        "files": [
+            "./source/helpers.php"
+        ],
+        "psr-4": {
+            "Next\\": "source"
+        }
+    },
+    "config": {
+        "sort-packages": true
+    },
+    "minimum-stability": "dev",
+    "prefer-stable": true
 }
