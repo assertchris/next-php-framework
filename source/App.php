@@ -4,24 +4,15 @@ namespace Next;
 
 class App extends \Illuminate\Container\Container
 {
-    private $proxies = [
-        'Next\\Cache' => \Next\Cache\Proxy::class,
-        'Next\\Database' => \Next\Database\Proxy::class,
-        'Next\\Errors' => \Next\Errors\Proxy::class,
-        'Next\\Logging' => \Next\Logging\Proxy::class,
-        'Next\\Session' => \Next\Session\Proxy::class,
-        'Next\\Validation' => \Next\Validation\Proxy::class,
-    ];
-
     public function __construct(array $config = [])
     {
         static::setInstance($this);
-        $this->configure($config);
-    }
 
-    private function configure(array $config = [])
-    {
         $this['config'] = $config;
+
+        if (!isset($config['paths']) || !isset($config['paths']['pages'])) {
+            throw new \InvalidArgumentException('paths.pages not defined');
+        }
 
         $this->configurePaths($config['paths']);
         $this->configureProxies();
@@ -29,10 +20,6 @@ class App extends \Illuminate\Container\Container
 
     private function configurePaths(array $paths = [])
     {
-        if (!isset($paths['pages'])) {
-            throw new \InvalidArgumentException('paths.pages not defined');
-        }
-
         foreach ($paths as $key => $path) {
             $this->instance("path.{$key}", $path);
         }
@@ -40,9 +27,11 @@ class App extends \Illuminate\Container\Container
 
     private function configureProxies()
     {
-        foreach ($this->proxies as $alias => $class) {
-            $class::connect($this);
-            class_alias($class, $alias);
+        if (isset($this['config']['proxies'])) {
+            foreach ($this['config']['proxies'] as $alias => $class) {
+                $class::connect($this);
+                class_alias($class, $alias);
+            }
         }
     }
 
@@ -51,10 +40,12 @@ class App extends \Illuminate\Container\Container
         $request = \Next\Http\Request::capture();
         $response = \Next\Http\Response::create();
 
-        if ($request->expectsJson()) {
-            $this['errors']->enableJsonHandler($this);
-        } else {
-            $this['errors']->enableHtmlHandler($this);
+        if ($errors = $this['errors']) {
+            if ($request->expectsJson()) {
+                $errors->enableJsonHandler($this);
+            } else {
+                $errors->enableHtmlHandler($this);
+            }
         }
 
         $this->instance('request', $request);
