@@ -14,9 +14,9 @@ class Proxy
         $app['validation'] = static::getInstance();
     }
 
-    public function run(Request $request, array $rules = [])
+    public function run(\Next\Http\Request $request, array $rules = [])
     {
-        $validation = $this->validator->make($request->only(array_keys($rules)), $rules);
+        $validation = static::$connection->make($request->only(array_keys($rules)), $rules);
         $validation->validate();
 
         return $validation;

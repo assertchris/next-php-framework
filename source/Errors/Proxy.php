@@ -19,7 +19,33 @@ class Proxy
 
     public function enableJsonHandler(\Next\App $app)
     {
-        static::$connection->pushHandler(new \Whoops\Handler\JsonResponseHandler());
+        if (isset($app['config']['env']) && $app['config']['env'] === 'dev') {
+            static::$connection->pushHandler(new \Whoops\Handler\JsonResponseHandler());
+            return;
+        }
+
+        static::$connection->pushHandler(
+            new \Whoops\Handler\CallbackHandler($this->getSafeErrorJsonCallback($app))
+        );
+    }
+
+    private function getSafeErrorJsonCallback(\Next\App $app)
+    {
+        return function ($exception) use ($app) {
+            if ($exception->getMessage() === '404' || $exception->getMessage() === '405') {
+                $this->showSafeErrorJson($app, (int) $exception->getMessage());
+            }
+
+            $this->showSafeErrorJson($app, 500);
+        };
+    }
+
+    private function showSafeErrorJson(\Next\App $app, int $code)
+    {
+        $app['response']->json([
+            'status' => 'error',
+            'code' => $code,
+        ]);
     }
 
     public function enableHtmlHandler(\Next\App $app)
