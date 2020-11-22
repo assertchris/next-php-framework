@@ -29,14 +29,25 @@ if (!function_exists('path')) {
 }
 
 if (!function_exists('files')) {
-    function files($pattern, $flags = 0): array
+    function files($folder, $extension = 'php'): array
     {
-        $files = glob($pattern, $flags);
+        $directory = new RecursiveDirectoryIterator($folder);
+        $iterator = new RecursiveIteratorIterator($directory);
 
-        foreach (glob(dirname($pattern) . '/*', GLOB_ONLYDIR|GLOB_NOSORT) as $dir) {
-            $files = array_merge($files, files($dir . '/' . basename($pattern), $flags));
+        $files = [];
+
+        foreach($iterator as $file) {
+            if (!is_file($file->getPathname())) {
+                continue;
+            }
+
+            if (!str_ends_with($file->getFilename(), $extension)) {
+                continue;
+            }
+
+            $files[] = $file->getPathname();
         }
 
         return $files;
-    }   
+    }
 }

@@ -66,12 +66,20 @@ class App extends \Illuminate\Container\Container
     private function route(\Next\Http\Request $request, \Next\Http\Response $response)
     {
         $path = path('pages');
-        $allFiles = files("{$path}/*.php");
-        $apiFiles = files("{$path}/api/*.php");
+        $allFiles = files($path);
+        $apiFiles = files("{$path}/api");
         $pageFiles = array_diff($allFiles, $apiFiles);
 
         $dispatcher = \FastRoute\simpleDispatcher(function (\FastRoute\RouteCollector $collector) use ($path, $apiFiles, $pageFiles) {
             foreach ($apiFiles as $apiFile) {
+                if (!is_file($apiFile)) {
+                    continue;
+                }
+
+                if (str_starts_with($apiFile, "_")) {
+                    continue;
+                }
+
                 $apiFilePath = str_replace($path, '', dirname($apiFile));
                 $apiFileName = basename($apiFile, '.php');
 
@@ -82,7 +90,16 @@ class App extends \Illuminate\Container\Container
                 $collector->addRoute('*', "{$apiFilePath}/{$apiFileName}", ['type' => 'api', 'factory' => require $apiFile]);
             }
 
+
             foreach ($pageFiles as $pageFile) {
+                if (!is_file($pageFile)) {
+                    continue;
+                }
+
+                if (str_starts_with($pageFile, "_")) {
+                    continue;
+                }
+
                 $pageFilePath = str_replace($path, '', dirname($pageFile));
                 $pageFileName = basename($pageFile, '.php');
 
@@ -110,11 +127,11 @@ class App extends \Illuminate\Container\Container
                 }
 
                 if ($result[1]['type'] === 'page') {
-                    $content = $result[1]['factory']($request, $response);
+                    $content = $result[1]['factory']($request, $response, $result[2]);
 
                     if (is_file("{$path}/_document.php")) {
                         $document = require "{$path}/_document.php";
-                        $content = $document($request, $response, $content);
+                        $content = $document($request, $response, $content, $result[2]);
                     }
 
                     $response->setContent($content);

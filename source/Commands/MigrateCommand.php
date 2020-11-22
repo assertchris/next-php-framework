@@ -29,7 +29,7 @@ class MigrateCommand extends \Symfony\Component\Console\Command\Command
         }
         
         $path = path('migrations');
-        $migrations = files("{$path}/*.php");
+        $migrations = files($path);
         
         foreach ($migrations as $migration) {
             $name = basename($migration, '.php');
