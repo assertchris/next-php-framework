@@ -2,7 +2,8 @@
   "name": "next/framework",
   "description": "Lightweight framework for PHP app development",
   "scripts": {
-    "test": "vendor/bin/pest"
+    "test": "vendor/bin/pest",
+    "test:coverage": "vendor/bin/pest --coverage"
   },
   "require": {
     "filp/whoops": "^2.9",
