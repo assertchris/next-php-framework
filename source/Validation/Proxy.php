@@ -10,8 +10,6 @@ class Proxy
     public static function connect(\Next\App $app)
     {
         static::$connection = new \Rakit\Validation\Validator();
-
-        $app['validation'] = static::getInstance();
     }
 
     public function run(\Next\Http\Request $request, array $rules = [])

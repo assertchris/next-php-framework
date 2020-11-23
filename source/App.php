@@ -10,8 +10,8 @@ class App extends \Illuminate\Container\Container
 
         $this['config'] = $config;
 
-        if (!isset($config['paths']) || !isset($config['paths']['pages'])) {
-            throw new \InvalidArgumentException('paths.pages not defined');
+        if (!isset($config['paths'])) {
+            throw new \InvalidArgumentException('paths not defined');
         }
 
         $this->configurePaths($config['paths']);
@@ -20,6 +20,10 @@ class App extends \Illuminate\Container\Container
 
     private function configurePaths(array $paths = [])
     {
+        if (!isset($paths['pages'])) {
+            throw new \InvalidArgumentException('paths.pages not defined');
+        }
+
         foreach ($paths as $key => $path) {
             $this->instance("path.{$key}", $path);
         }
@@ -29,8 +33,14 @@ class App extends \Illuminate\Container\Container
     {
         if (isset($this['config']['proxies'])) {
             foreach ($this['config']['proxies'] as $alias => $class) {
+                if (!class_exists($class)) {
+                    throw new \InvalidArgumentException("{$class} not defined");
+                }
+
                 $class::connect($this);
                 class_alias($class, $alias);
+
+                $this->instance($alias, $class::getInstance());
             }
         }
     }
@@ -40,7 +50,9 @@ class App extends \Illuminate\Container\Container
         $request = \Next\Http\Request::capture();
         $response = \Next\Http\Response::create();
 
-        if ($errors = $this['errors']) {
+        if ($this->has(\Next\Errors::class)) {
+            $errors = $this[\Next\Errors::class];
+
             if ($request->expectsJson()) {
                 $errors->enableJsonHandler($this);
             } else {
@@ -48,8 +60,8 @@ class App extends \Illuminate\Container\Container
             }
         }
 
-        $this->instance('request', $request);
-        $this->instance('response', $response);
+        $this->instance(\Next\Http\Request::class, $request);
+        $this->instance(\Next\Http\Response::class, $response);
 
         if (isset($this['config']['middleware'])) {
             foreach ($this['config']['middleware'] as $middleware) {

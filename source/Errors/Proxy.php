@@ -13,8 +13,6 @@ class Proxy
         $whoops->register();
 
         static::$connection = $whoops;
-
-        $app['errors'] = static::getInstance();
     }
 
     public function enableJsonHandler(\Next\App $app)
@@ -42,7 +40,7 @@ class Proxy
 
     private function showSafeErrorJson(\Next\App $app, int $code)
     {
-        $app['response']->json([
+        $app[\Next\Http\Response::class]->json([
             'status' => 'error',
             'code' => $code,
         ]);
@@ -74,8 +72,8 @@ class Proxy
     private function showSafeErrorPage(\Next\App $app, int $code)
     {
         $path = $app['path.pages'];
-        $request = $app['request'];
-        $response = $app['response'];
+        $request = $app[\Next\Http\Request::class];
+        $response = $app[\Next\Http\Response::class];
 
         if (is_file("{$path}/_404.php")) {
             $document = require "{$path}/_{$code}.php";

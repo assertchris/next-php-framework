@@ -10,7 +10,7 @@ This list is not exhaustive or prioritised:
 - [ ] Add Framework documentation
 - [ ] Refine cache and session dx
 - [ ] Add more commands (migrate:fresh, make, serve)
-- [ ] Add middleware layer
+- [x] Add middleware layer
 - [ ] Add phpx template layer
 - [ ] Add sourcemap support for phpx
 - [ ] Add phpx interactivity

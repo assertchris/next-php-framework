@@ -15,7 +15,7 @@ class MigrateCommand extends \Symfony\Component\Console\Command\Command
         \Symfony\Component\Console\Input\InputInterface $input,
         \Symfony\Component\Console\Output\OutputInterface $output,
     ) {
-        $connection = \Next\App::getInstance()->make('db');
+        $connection = \Next\App::getInstance()->make(\Next\Database::class);
 
         $count = 0;
         $output->writeln('Migrating');

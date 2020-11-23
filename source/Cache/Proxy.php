@@ -11,7 +11,5 @@ class Proxy
     {
         // TODO: enable other drivers
         static::$connection = new \Symfony\Component\Cache\Adapter\FilesystemAdapter();
-
-        $app['cache'] = static::getInstance();
     }
 }

@@ -11,7 +11,5 @@ class Proxy
     {
         // TODO: enable other drivers
         static::$connection = new \Symfony\Component\HttpFoundation\Session\Session();
-
-        $app['session'] = static::getInstance();
     }
 }

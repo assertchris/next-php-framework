@@ -1,0 +1,1 @@
+C:37:"PHPUnit\Runner\DefaultTestResultCache":300:{a:2:{s:7:"defects";a:1:{s:71:"/Users/assertchris/Source/next-php/framework/tests/CacheTest.php::cache";i:4;}s:5:"times";a:2:{s:70:"/Users/assertchris/Source/next-php/framework/tests/ExampleTest.php::it";d:0.002;s:71:"/Users/assertchris/Source/next-php/framework/tests/CacheTest.php::cache";d:0.006;}}}

@@ -19,7 +19,5 @@ class Proxy
         $capsule->bootEloquent();
 
         static::$connection = $capsule;
-        
-        $app['db'] = static::getInstance();
     }
 }

@@ -13,7 +13,5 @@ class Proxy
         $logger->pushHandler(new \Monolog\Handler\StreamHandler(path('log')));
 
         static::$connection = $logger;
-
-        $app['log'] = static::getInstance();
     }
 }
