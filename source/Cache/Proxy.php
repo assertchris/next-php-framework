@@ -13,17 +13,17 @@ class Proxy
         static::$connection = new \Symfony\Component\Cache\Adapter\FilesystemAdapter();
     }
 
-    public function put(string $key, $value, $seconds = null): static
+    public function put(string $key, mixed $value, int $seconds = null): static
     {
         return $this->store($key, $value, $seconds, true);
     }
 
-    private function store(string $key, $value, $seconds = null, $shouldOverride = true): static
+    private function store(string $key, mixed $value, int $seconds = null, bool $shouldOverride = true): static
     {
         $item = static::$connection->getItem($key);
 
         if (!$item->isHit() || ($item->isHit() && $shouldOverride)) {
-            $item = $item->set($value);
+            $item->set($value);
 
             if (is_int($seconds)) {
                 $item->expiresAfter($seconds);
@@ -35,7 +35,7 @@ class Proxy
         return $this;
     }
 
-    public function add(string $key, $value, $seconds = null): static
+    public function add(string $key, mixed $value, int $seconds = null): static
     {
         return $this->store($key, $value, $seconds, false);
     }
@@ -46,7 +46,7 @@ class Proxy
         return $item->isHit();
     }
 
-    public function get(string $key, $default = null): mixed
+    public function get(string $key, mixed $default = null): mixed
     {
         $item = static::$connection->getItem($key);
 
@@ -61,18 +61,21 @@ class Proxy
         return $default;
     }
 
-    public function remember(string $key, \Closure $factory, $seconds = null): static
+    public function remember(string $key, \Closure $factory, int $seconds = null): mixed
     {
-        return $this->store($key, $factory(), $seconds);
+        $this->store($key, $value = $factory(), $seconds);
+        return $value;
     }
 
-    public function forget(string $key)
+    public function forget(string $key): static
     {
         static::$connection->deleteItem($key);
+        return $this;
     }
 
-    public function flush()
+    public function flush(): static
     {
         static::$connection->clear();
+        return $this;
     }
 }

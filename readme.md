@@ -11,6 +11,7 @@ This list is not exhaustive or prioritised:
 - [ ] Refine cache and session dx
 - [ ] Add more commands (migrate:fresh, make, serve)
 - [x] Add middleware layer
+- [ ] Add more cache and session drivers
 - [ ] Add phpx template layer
 - [ ] Add sourcemap support for phpx
 - [ ] Add phpx interactivity
