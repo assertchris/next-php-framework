@@ -4,11 +4,18 @@ namespace Next\Http;
 
 class Response extends \Illuminate\Http\Response
 {
-    public function json(array $data = null, int $status = 200)
+    public function json(...$params)
     {
-        $this->headers->set('Content-Type', 'application/json');
-        $this->setContent(json_encode($data));
-        $this->setStatusCode($status);
-        $this->send();
+        return new \Next\Http\JsonResponse(...$params);
+    }
+
+    public function redirect(...$params)
+    {
+        return new \Next\Http\RedirectResponse(...$params);
+    }
+
+    public function for()
+    {
+        return new \Next\Http\ResponseTypeNegotiator();
     }
 }

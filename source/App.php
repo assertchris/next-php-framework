@@ -125,30 +125,31 @@ class App extends \Illuminate\Container\Container
         });
 
         $httpMethod = $request->getMethod();
-        $httpPath = $request->getBaseUrl() . $request->getPathInfo();
+        $httpPath = $request->getBaseUrl() . $request->getPathInfoWithoutExtension();
 
-        $result = $dispatcher->dispatch($httpMethod, $httpPath);
+        $routed = $dispatcher->dispatch($httpMethod, $httpPath);
 
-        switch ($result[0]) {
+        switch ($routed[0]) {
             case \FastRoute\Dispatcher::METHOD_NOT_ALLOWED:
                 throw new \RuntimeException('405');
                 break;
 
             case \FastRoute\Dispatcher::FOUND:
-                if ($result[1]['type'] === 'api') {
-                    $result[1]['factory']($request, $response, $result[2]);
+                if ($routed[1]['type'] === 'api') {
+                    $content = $routed[1]['factory']($request, $routed[2]);
+                    $this->dispatchResponse($content);
                 }
 
-                if ($result[1]['type'] === 'page') {
-                    $content = $result[1]['factory']($request, $response, $result[2]);
+                if ($routed[1]['type'] === 'page') {
+                    $content = $routed[1]['factory']($request, $routed[2]);
+                    $content = $this->unwrapResponse($content);
 
                     if (is_file("{$path}/_document.php")) {
                         $document = require "{$path}/_document.php";
-                        $content = $document($request, $response, $content, $result[2]);
+                        $content = $document($request, $content, $routed[2]);
                     }
 
-                    $response->setContent($content);
-                    $response->send();
+                    $this->dispatchResponse($content);
                 }
 
                 break;
@@ -157,5 +158,41 @@ class App extends \Illuminate\Container\Container
                 throw new \RuntimeException('404');
                 break;
         }
+    }
+
+    private function dispatchResponse(mixed $response): void
+    {
+        $response = $this->negotiateResponse($response);
+
+        if (is_string($response)) {
+            $response = \Next\Http\Response::create($response);
+        }
+
+        if (method_exists($response, 'send')) {
+            $response->send();
+        }
+    }
+
+    private function negotiateResponse(mixed $response): mixed
+    {
+        if ($response instanceof \Next\Http\RequestMethodNegotiator) {
+            return $this->negotiateResponse($response->negotiate());
+        }
+        if ($response instanceof \Next\Http\ResponseTypeNegotiator) {
+            return $this->negotiateResponse($response->negotiate());
+        }
+
+        return $response;
+    }
+
+    private function unwrapResponse(mixed $response): mixed
+    {
+        $response = $this->negotiateResponse($response);
+
+        if ($response instanceof \Symfony\Component\HttpFoundation\Response) {
+            $response = $response->getContent();
+        }
+
+        return $response;
     }
 }

@@ -13,12 +13,12 @@ class Proxy
         static::$connection = new \Symfony\Component\Cache\Adapter\FilesystemAdapter();
     }
 
-    public function put(string $key, $value, int $seconds = null)
+    public function put(string $key, mixed $value, int $seconds = null): static
     {
         return $this->store($key, $value, $seconds, true);
     }
 
-    private function store(string $key, $value, int $seconds = null, bool $shouldOverride = true)
+    private function store(string $key, mixed $value, int $seconds = null, bool $shouldOverride = true): static
     {
         $item = static::$connection->getItem($key);
 
@@ -35,7 +35,7 @@ class Proxy
         return $this;
     }
 
-    public function add(string $key, $value, int $seconds = null)
+    public function add(string $key, mixed $value, int $seconds = null): static
     {
         return $this->store($key, $value, $seconds, false);
     }
@@ -46,7 +46,7 @@ class Proxy
         return $item->isHit();
     }
 
-    public function get(string $key, $default = null)
+    public function get(string $key, mixed $default = null): mixed
     {
         $item = static::$connection->getItem($key);
 
@@ -61,19 +61,19 @@ class Proxy
         return $default;
     }
 
-    public function remember(string $key, \Closure $factory, int $seconds = null)
+    public function remember(string $key, \Closure $factory, int $seconds = null): mixed
     {
         $this->store($key, $value = $factory(), $seconds);
         return $value;
     }
 
-    public function forget(string $key)
+    public function forget(string $key): static
     {
         static::$connection->deleteItem($key);
         return $this;
     }
 
-    public function flush()
+    public function flush(): static
     {
         static::$connection->clear();
         return $this;

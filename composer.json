@@ -6,6 +6,7 @@
     "test:coverage": "vendor/bin/pest --coverage"
   },
   "require": {
+    "php": ">=8.0",
     "filp/whoops": "^2.9",
     "illuminate/container": "^8.15",
     "illuminate/database": "^8.15",

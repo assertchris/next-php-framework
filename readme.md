@@ -11,7 +11,12 @@ This list is not exhaustive or prioritised:
 - [ ] Refine cache and session dx
 - [ ] Add more commands (migrate:fresh, make, serve)
 - [x] Add middleware layer
+- [x] Add session middleware
+- [ ] Add rate limit middleware
+- [ ] Add security middleware (cors, csp, csrf)
 - [ ] Add more cache and session drivers
+- [x] Support extension and request method negotiation
+- [ ] Support route overrides in config
 - [ ] Add phpx template layer
 - [ ] Add sourcemap support for phpx
 - [ ] Add phpx interactivity

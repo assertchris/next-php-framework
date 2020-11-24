@@ -2,14 +2,6 @@
 
 use Next\App;
 
-if (!function_exists('dd')) {
-    function dd(...$params)
-    {
-        var_dump(...$params);
-        die();
-    }
-}
-
 if (!function_exists('app')) {
     function app($abstract = null, array $parameters = [])
     {
@@ -18,6 +10,24 @@ if (!function_exists('app')) {
         }
 
         return App::getInstance()->make($abstract, $parameters);
+    }
+}
+
+if (!function_exists('request')) {
+    function request(): \Next\Http\Request
+    {
+        return app(\Next\Http\Request::class);
+    }
+}
+
+if (!function_exists('response')) {
+    function response(string $content = null): mixed
+    {
+        if ($content) {
+            return \Next\Http\Response::create($content);
+        }
+
+        return app(\Next\Http\Response::class);
     }
 }
 
