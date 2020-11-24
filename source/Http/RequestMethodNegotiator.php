@@ -25,7 +25,6 @@ class RequestMethodNegotiator
     public function negotiate(): mixed
     {
         $request = \Next\App::getInstance()->make(\Next\Http\Request::class);
-
         $currentMethod = strtolower($request->method());
 
         foreach (static::METHODS as $method) {

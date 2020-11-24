@@ -25,10 +25,10 @@ class ResponseTypeNegotiator
     public function negotiate(): mixed
     {
         $request = \Next\App::getInstance()->make(\Next\Http\Request::class);
-        $current = strtolower($request->getPathInfoExtension());
+        $currentType = strtolower($request->getPathInfoExtension());
 
         foreach (static::TYPES as $type) {
-            if (isset($this->handlers[$type]) && $current === $type) {
+            if (isset($this->handlers[$type]) && $currentType === $type) {
                 return $this->handlers[$type]();
             }
         }
@@ -37,6 +37,6 @@ class ResponseTypeNegotiator
             return $this->handlers['default']();
         }
 
-        throw new \RuntimeException("No content negotiator for {$current}");
+        throw new \RuntimeException("No content negotiator for {$currentType}");
     }
 }
