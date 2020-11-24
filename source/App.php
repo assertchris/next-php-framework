@@ -38,7 +38,10 @@ class App extends \Illuminate\Container\Container
                 }
 
                 $class::connect($this);
-                class_alias($class, $alias);
+
+                if ($class !== $alias) {
+                    class_alias($class, $alias);
+                }
 
                 $this->instance($alias, $class::getInstance());
             }
