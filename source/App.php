@@ -144,11 +144,10 @@ class App extends \Illuminate\Container\Container
 
                 if ($routed[1]['type'] === 'page') {
                     $content = $routed[1]['factory']($request);
-                    $content = $this->unwrapResponse($content);
 
                     if (is_file("{$path}/_document.php")) {
                         $document = require "{$path}/_document.php";
-                        $content = $document($request, $content);
+                        $content = $document($request, $this->unwrapResponse($content));
                     }
 
                     $this->dispatchResponse($content);
