@@ -75,7 +75,7 @@ class Proxy
         $request = $app[\Next\Http\Request::class];
         $response = $app[\Next\Http\Response::class];
 
-        if (is_file("{$path}/_404.php")) {
+        if (is_file("{$path}/_{$code}.php")) {
             $document = require "{$path}/_{$code}.php";
         } else {
             $document = require __DIR__ . "/../../pages/{$code}.php";
