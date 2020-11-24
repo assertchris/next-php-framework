@@ -73,10 +73,10 @@ class App extends \Illuminate\Container\Container
             }
         }
 
-        $this->route($request, $response);
+        $this->route($request);
     }
 
-    private function route(\Next\Http\Request $request, \Next\Http\Response $response)
+    private function route(\Next\Http\Request $request)
     {
         $path = path('pages');
         $allFiles = files($path);
@@ -135,18 +135,20 @@ class App extends \Illuminate\Container\Container
                 break;
 
             case \FastRoute\Dispatcher::FOUND:
+                $request->setParams($routed[2]);
+
                 if ($routed[1]['type'] === 'api') {
-                    $content = $routed[1]['factory']($request, $routed[2]);
+                    $content = $routed[1]['factory']($request);
                     $this->dispatchResponse($content);
                 }
 
                 if ($routed[1]['type'] === 'page') {
-                    $content = $routed[1]['factory']($request, $routed[2]);
+                    $content = $routed[1]['factory']($request);
                     $content = $this->unwrapResponse($content);
 
                     if (is_file("{$path}/_document.php")) {
                         $document = require "{$path}/_document.php";
-                        $content = $document($request, $content, $routed[2]);
+                        $content = $document($request, $content);
                     }
 
                     $this->dispatchResponse($content);

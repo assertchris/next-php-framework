@@ -4,6 +4,23 @@ namespace Next\Http;
 
 class Request extends \Illuminate\Http\Request
 {
+    protected $params;
+
+    public function setParams(array $params)
+    {
+        $this->params = new \Symfony\Component\HttpFoundation\ParameterBag($params);
+    }
+
+    public function getParams()
+    {
+        return $this->params;
+    }
+
+    public function param(string $key)
+    {
+        return $this->params->get($key);
+    }
+
     public function when()
     {
         return new \Next\Http\RequestMethodNegotiator();

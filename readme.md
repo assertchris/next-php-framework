@@ -16,6 +16,7 @@ This list is not exhaustive or prioritised:
 - [ ] Add security middleware (cors, csp, csrf)
 - [ ] Add more cache and session drivers
 - [x] Support extension and request method negotiation
+- [x] Store route params in request and make them accessible like headers or cookies
 - [ ] Support route overrides in config
 - [ ] Add phpx template layer
 - [ ] Add sourcemap support for phpx
