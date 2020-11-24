@@ -136,7 +136,7 @@ class App extends \Illuminate\Container\Container
 
             case \FastRoute\Dispatcher::FOUND:
                 if ($result[1]['type'] === 'api') {
-                    $result[1]['factory']($request, $response);
+                    $result[1]['factory']($request, $response, $result[2]);
                 }
 
                 if ($result[1]['type'] === 'page') {
