@@ -13,7 +13,7 @@ class MigrateCommand extends \Symfony\Component\Console\Command\Command
 
     protected function execute(
         \Symfony\Component\Console\Input\InputInterface $input,
-        \Symfony\Component\Console\Output\OutputInterface $output,
+        \Symfony\Component\Console\Output\OutputInterface $output
     ) {
         $connection = \Next\App::getInstance()->make(\Next\Database::class);
 
@@ -23,39 +23,44 @@ class MigrateCommand extends \Symfony\Component\Console\Command\Command
         if (!$connection->schema()->hasTable('migrations')) {
             $output->writeln('Creating migrations table');
 
-            $connection->schema()->create('migrations', function($table) {
+            $connection->schema()->create('migrations', function ($table) {
                 $table->string('name')->unique();
             });
         }
-        
+
         $path = path('migrations');
         $migrations = files($path);
-        
+
         foreach ($migrations as $migration) {
             $name = basename($migration, '.php');
-        
-            if ($connection->table('migrations')->where('name', $name)->first()) {
+
+            if (
+                $connection
+                    ->table('migrations')
+                    ->where('name', $name)
+                    ->first()
+            ) {
                 continue;
             }
 
             $count++;
             $output->writeln("Migrating {$name}");
-        
+
             $runner = require $migration;
             $runner($connection);
-        
+
             $connection->table('migrations')->insert(['name' => $name]);
         }
 
         if ($count == 0) {
             $output->writeln('No migrations to run');
-        } else if ($count == 1) {
+        } elseif ($count == 1) {
             $output->writeln("{$count} migration run");
         } else {
             $output->writeln("{$count} migrations run");
         }
 
-        $output->writeln("Done");
+        $output->writeln('Done');
 
         return \Symfony\Component\Console\Command\Command::SUCCESS;
     }

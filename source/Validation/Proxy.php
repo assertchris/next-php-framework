@@ -6,7 +6,7 @@ class Proxy
 {
     use \Next\Concerns\CannotBeCreated;
     use \Next\Concerns\ForwardsToConnection;
-    
+
     public static function connect(\Next\App $app)
     {
         static::$connection = $connection = new \Rakit\Validation\Validator();

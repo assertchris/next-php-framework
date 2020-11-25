@@ -7,13 +7,19 @@ class ResponseTypeNegotiator
     protected array $handlers = [];
     public const TYPES = ['html', 'json', 'xml', 'csv'];
 
-    private function handle(string $type, \Closure $then): static
+    /**
+     * @return static
+     */
+    private function handle(string $type, \Closure $then)
     {
         $this->handlers[$type] = $then;
         return $this;
     }
 
-    public function __call(string $type, array $params = []): static
+    /**
+     * @return static
+     */
+    public function __call(string $type, array $params = [])
     {
         if (in_array($type, static::TYPES) || $type === 'default') {
             return $this->handle($type, ...$params);

@@ -22,9 +22,7 @@ class Proxy
             return;
         }
 
-        static::$connection->pushHandler(
-            new \Whoops\Handler\CallbackHandler($this->getSafeErrorJsonCallback($app))
-        );
+        static::$connection->pushHandler(new \Whoops\Handler\CallbackHandler($this->getSafeErrorJsonCallback($app)));
     }
 
     private function getSafeErrorJsonCallback(\Next\App $app)
@@ -53,9 +51,7 @@ class Proxy
             return;
         }
 
-        static::$connection->pushHandler(
-            new \Whoops\Handler\CallbackHandler($this->getSafeErrorPageCallback($app))
-        );
+        static::$connection->pushHandler(new \Whoops\Handler\CallbackHandler($this->getSafeErrorPageCallback($app)));
     }
 
     private function getSafeErrorPageCallback(\Next\App $app)

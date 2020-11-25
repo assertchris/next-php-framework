@@ -83,13 +83,17 @@ class App extends \Illuminate\Container\Container
         $apiFiles = files("{$path}/api");
         $pageFiles = array_diff($allFiles, $apiFiles);
 
-        $dispatcher = \FastRoute\simpleDispatcher(function (\FastRoute\RouteCollector $collector) use ($path, $apiFiles, $pageFiles) {
+        $dispatcher = \FastRoute\simpleDispatcher(function (\FastRoute\RouteCollector $collector) use (
+            $path,
+            $apiFiles,
+            $pageFiles
+        ) {
             foreach ($apiFiles as $apiFile) {
                 if (!is_file($apiFile)) {
                     continue;
                 }
 
-                if (str_starts_with($apiFile, "_")) {
+                if (str_starts_with($apiFile, '_')) {
                     continue;
                 }
 
@@ -100,16 +104,18 @@ class App extends \Illuminate\Container\Container
                     $apiFileName = '';
                 }
 
-                $collector->addRoute('*', "{$apiFilePath}/{$apiFileName}", ['type' => 'api', 'factory' => require $apiFile]);
+                $collector->addRoute('*', "{$apiFilePath}/{$apiFileName}", [
+                    'type' => 'api',
+                    'factory' => require $apiFile,
+                ]);
             }
-
 
             foreach ($pageFiles as $pageFile) {
                 if (!is_file($pageFile)) {
                     continue;
                 }
 
-                if (str_starts_with($pageFile, "_")) {
+                if (str_starts_with($pageFile, '_')) {
                     continue;
                 }
 
@@ -120,7 +126,10 @@ class App extends \Illuminate\Container\Container
                     $pageFileName = '';
                 }
 
-                $collector->addRoute('GET', "{$pageFilePath}/{$pageFileName}", ['type' => 'page', 'factory' => require $pageFile]);
+                $collector->addRoute('GET', "{$pageFilePath}/{$pageFileName}", [
+                    'type' => 'page',
+                    'factory' => require $pageFile,
+                ]);
             }
         });
 
@@ -154,7 +163,7 @@ class App extends \Illuminate\Container\Container
                 }
 
                 break;
-            
+
             default:
                 throw new \RuntimeException('404');
                 break;

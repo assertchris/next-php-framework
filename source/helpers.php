@@ -46,7 +46,7 @@ if (!function_exists('files')) {
 
         $files = [];
 
-        foreach($iterator as $file) {
+        foreach ($iterator as $file) {
             if (!is_file($file->getPathname())) {
                 continue;
             }

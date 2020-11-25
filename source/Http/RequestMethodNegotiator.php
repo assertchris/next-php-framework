@@ -7,13 +7,19 @@ class RequestMethodNegotiator
     protected array $handlers = [];
     public const METHODS = ['get', 'post', 'patch', 'put', 'delete'];
 
-    private function handle(string $method, \Closure $then): static
+    /**
+     * @return static
+     */
+    private function handle(string $method, \Closure $then)
     {
         $this->handlers[$method] = $then;
         return $this;
     }
-    
-    public function __call(string $method, array $params = []): static
+
+    /**
+     * @return static
+     */
+    public function __call(string $method, array $params = [])
     {
         if (in_array($method, static::METHODS) || $type === 'default') {
             return $this->handle($method, ...$params);
