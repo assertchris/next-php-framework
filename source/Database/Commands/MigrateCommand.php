@@ -1,27 +1,20 @@
 <?php
 
-namespace Next\Commands;
+namespace Next\Database\Commands;
 
-class MigrateCommand extends \Symfony\Component\Console\Command\Command
+class MigrateCommand extends \Next\Console\Command
 {
-    protected static $defaultName = 'migrate';
+    protected string $signature = 'migrate';
 
-    protected function configure()
-    {
-        // TODO
-    }
+    protected string $description = 'Migrate the database';
 
-    protected function execute(
-        \Symfony\Component\Console\Input\InputInterface $input,
-        \Symfony\Component\Console\Output\OutputInterface $output
-    ) {
-        $connection = \Next\App::getInstance()->make(\Next\Database::class);
-
+    public function handle(\Next\Database $connection) {
         $count = 0;
-        $output->writeln('Migrating');
+        $this->line('Migrating');
 
         if (!$connection->schema()->hasTable('migrations')) {
-            $output->writeln('Creating migrations table');
+            $this->info('No migrations table found.');
+            $this->line('Creating migrations table');
 
             $connection->schema()->create('migrations', function ($table) {
                 $table->string('name')->unique();
@@ -44,7 +37,7 @@ class MigrateCommand extends \Symfony\Component\Console\Command\Command
             }
 
             $count++;
-            $output->writeln("Migrating {$name}");
+            $this->info("Migrating {$name}");
 
             $runner = require $migration;
             $runner($connection);
@@ -53,14 +46,14 @@ class MigrateCommand extends \Symfony\Component\Console\Command\Command
         }
 
         if ($count == 0) {
-            $output->writeln('No migrations to run');
+            $this->line('No migrations to run');
         } elseif ($count == 1) {
-            $output->writeln("{$count} migration run");
+            $this->line("{$count} migration run");
         } else {
-            $output->writeln("{$count} migrations run");
+            $this->line("{$count} migrations run");
         }
 
-        $output->writeln('Done');
+        $this->line('Done');
 
         return \Symfony\Component\Console\Command\Command::SUCCESS;
     }
