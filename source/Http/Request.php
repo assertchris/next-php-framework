@@ -2,6 +2,9 @@
 
 namespace Next\Http;
 
+/**
+ * @method \Rakit\Validation\Validation validate(array $rules = [], array $messages = [])
+ */
 class Request extends \Illuminate\Http\Request
 {
     protected $params;

@@ -9,7 +9,15 @@ class Proxy
     
     public static function connect(\Next\App $app)
     {
-        static::$connection = new \Rakit\Validation\Validator();
+        static::$connection = $connection = new \Rakit\Validation\Validator();
+
+        \Next\Http\Request::macro('validate', function (array $rules = [], array $messages = []) use ($connection) {
+            $validation = $connection->make($this->only(array_keys($rules)), $rules, $messages);
+
+            $validation->validate();
+
+            return $validation;
+        });
     }
 
     public function run(\Next\Http\Request $request, array $rules = [])
