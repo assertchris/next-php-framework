@@ -3,7 +3,8 @@
     "description": "Lightweight framework for PHP app development",
     "scripts": {
         "test": "vendor/bin/pest",
-        "test:coverage": "vendor/bin/pest --coverage"
+        "test:coverage": "vendor/bin/pest --coverage",
+        "format": "npm run format:php source"
     },
     "require": {
         "php": ">=8.0",
