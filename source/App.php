@@ -147,12 +147,12 @@ class App extends \Illuminate\Container\Container
                 $request->setParams($routed[2]);
 
                 if ($routed[1]['type'] === 'api') {
-                    $content = $routed[1]['factory']($request);
+                    $content = $routed[1]['factory']();
                     $this->dispatchResponse($content);
                 }
 
                 if ($routed[1]['type'] === 'page') {
-                    $content = $routed[1]['factory']($request);
+                    $content = $routed[1]['factory']();
 
                     if (is_file("{$path}/_document.php")) {
                         $document = require "{$path}/_document.php";
