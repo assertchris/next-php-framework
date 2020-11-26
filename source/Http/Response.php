@@ -6,12 +6,20 @@ class Response extends \Illuminate\Http\Response
 {
     public function json(...$params)
     {
-        return new \Next\Http\JsonResponse(...$params);
+        $response = new \Next\Http\JsonResponse(...$params);
+
+        \Next\App::getInstance()->instance(static::class, $response);
+
+        return $response;
     }
 
     public function redirect(...$params)
     {
-        return new \Next\Http\RedirectResponse(...$params);
+        $response = new \Next\Http\RedirectResponse(...$params);
+
+        \Next\App::getInstance()->instance(static::class, $response);
+
+        return $response;
     }
 
     public function for()

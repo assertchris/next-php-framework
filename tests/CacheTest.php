@@ -2,7 +2,7 @@
 
 $defaults = [
     'paths' => [
-        'pages' => __DIR__,
+        'pages' => __DIR__ . '/../pages',
     ],
     'proxies' => [
         \Next\Cache::class => \Next\Cache\Proxy::class,

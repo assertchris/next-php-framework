@@ -10,6 +10,7 @@ class SafeErrorHtmlHandler
 
         if ($exception->getMessage() === '404' || $exception->getMessage() === '405') {
             $this->showSafeErrorHtml($app, (int) $exception->getMessage());
+            return;
         }
 
         $this->showSafeErrorHtml($app, 500);
@@ -24,10 +25,10 @@ class SafeErrorHtmlHandler
         if (is_file("{$path}/_{$code}.php")) {
             $document = require "{$path}/_{$code}.php";
         } else {
-            $document = require __DIR__ . "/../../pages/{$code}.php";
+            $document = require __DIR__ . "/../../pages/_{$code}.php";
         }
 
-        $response->setContent($document($request, $response));
+        $response->setContent($app->call($document));
         $response->send();
     }
 }

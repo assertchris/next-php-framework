@@ -2,7 +2,7 @@
 
 $defaults = [
     'paths' => [
-        'pages' => __DIR__,
+        'pages' => __DIR__ . '/../pages',
     ],
     'proxies' => [
         \Next\Errors::class => \Next\Errors\Proxy::class,
@@ -70,4 +70,53 @@ test('errors can enable safe HTML handler', function () use ($defaults) {
     $handler = Tests\valueOf($handlerStack[0], 'callable');
 
     $this->assertInstanceOf(\Next\Errors\SafeErrorHtmlHandler::class, $handler);
+});
+
+foreach (['500', '405', '404'] as $code) {
+    test("errors can show a safe JSON {$code} error", function () use ($defaults, $code) {
+        $app = new \Next\App(array_merge($defaults));
+
+        $handler = new \Next\Errors\SafeErrorJsonHandler();
+        $handler(new \Exception($code));
+
+        $response = $app[\Next\Http\Response::class];
+
+        $this->assertEquals('{"status":"error","code":' . $code . '}', $response->getContent());
+    });
+}
+
+test('errors can show a safe HTML 500 error', function () use ($defaults) {
+    $app = new \Next\App(array_merge($defaults));
+
+    ob_start();
+    $handler = new \Next\Errors\SafeErrorHtmlHandler();
+    $handler(new \Exception());
+    $content = ob_get_contents();
+    ob_end_clean();
+
+    $this->assertEquals('Something went wrong.', $content);
+});
+
+test('errors can show a safe HTML 405 error', function () use ($defaults) {
+    $app = new \Next\App(array_merge($defaults));
+
+    ob_start();
+    $handler = new \Next\Errors\SafeErrorHtmlHandler();
+    $handler(new \Exception('405'));
+    $content = ob_get_contents();
+    ob_end_clean();
+
+    $this->assertEquals('Method not allowed.', $content);
+});
+
+test('errors can show a safe HTML 404 error', function () use ($defaults) {
+    $app = new \Next\App(array_merge($defaults));
+
+    ob_start();
+    $handler = new \Next\Errors\SafeErrorHtmlHandler();
+    $handler(new \Exception('404'));
+    $content = ob_get_contents();
+    ob_end_clean();
+
+    $this->assertEquals('Not found.', $content);
 });

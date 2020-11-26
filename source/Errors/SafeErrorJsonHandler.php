@@ -10,6 +10,7 @@ class SafeErrorJsonHandler
 
         if ($exception->getMessage() === '404' || $exception->getMessage() === '405') {
             $this->showSafeErrorJson($app, (int) $exception->getMessage());
+            return;
         }
 
         $this->showSafeErrorJson($app, 500);
