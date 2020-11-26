@@ -1,5 +1,5 @@
 <?php
 
-return function() {
-    return "Not found.";
+return function () {
+    return 'Not found.';
 };

@@ -1,5 +1,5 @@
 <?php
 
-return function() {
-    return "Method not allowed.";
+return function () {
+    return 'Method not allowed.';
 };

@@ -42,9 +42,7 @@ test('cache can have', function () use ($app) {
 test('cache can remember', function () use ($app) {
     $cache = $app[\Next\Cache::class];
 
-    $result = $cache->remember('i-can-remember', function () {
-        return 'i can remember';
-    }, 1); // ← has ttl
+    $result = $cache->remember('i-can-remember', fn() => 'i can remember', 1); // ← has ttl
 
     $this->assertEquals($result, 'i can remember');
     $this->assertEquals($cache->get('i-can-remember'), 'i can remember');
@@ -55,9 +53,7 @@ test('cache can remember', function () use ($app) {
 test('cache can remember forever', function () use ($app) {
     $cache = $app[\Next\Cache::class];
 
-    $result = $cache->remember('i-can-remember-forever', function () {
-        return 'i can remember forever';
-    }); // ← has no ttl
+    $result = $cache->remember('i-can-remember-forever', fn() => 'i can remember forever'); // ← has no ttl
 
     $this->assertEquals($result, 'i can remember forever');
     $this->assertEquals($cache->get('i-can-remember-forever'), 'i can remember forever');

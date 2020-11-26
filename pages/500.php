@@ -1,5 +1,5 @@
 <?php
 
-return function() {
-    return "Something went wrong.";
+return function () {
+    return 'Something went wrong.';
 };
