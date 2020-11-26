@@ -69,43 +69,51 @@ class App extends \Illuminate\Container\Container
         $this->route($request);
     }
 
-    private function applyMiddleware(\Next\Http\Request $request, callable $next): \Next\Http\Response
+    /**
+     * @return \Next\Http\Response|\Next\Http\JsonResponse|\Next\Http\RedirectResponse
+     */
+    private function applyMiddleware(\Next\Http\Request $request, callable $next): mixed
     {
         if (!isset($this['config']['middleware']) || empty($this['config']['middleware'])) {
             return $next($request);
         }
 
-        $middleware = $this['config']['middleware'];
-
-        $default = function (\Next\Http\Request $request) use ($next): \Next\Http\Response {
+        /**
+         * @return \Next\Http\Response|\Next\Http\JsonResponse|\Next\Http\RedirectResponse
+         */
+        $final = function (\Next\Http\Request $request) use ($next): mixed {
             $response = $this->negotiateResponse($next($request));
 
-            if ($response instanceof \Next\Http\Response) {
+            if (
+                $response instanceof \Next\Http\Response ||
+                $response instanceof \Next\Http\JsonResponse ||
+                $response instanceof \Next\Http\RedirectResponse
+            ) {
                 return $response;
             }
 
             return response($response);
         };
 
-        $runner = new class ($this, $middleware, $default) {
+        $runner = new class ($this, $this['config']['middleware'], $final) {
             private \Next\App $app;
-
             private array $middleware;
+            private \Closure $final;
 
-            /** @var callable */
-            private $default;
-
-            public function __construct(\Next\App $app, array $middleware, callable $default)
+            public function __construct(\Next\App $app, array $middleware, \Closure $final)
             {
                 $this->app = $app;
                 $this->middleware = $middleware;
-                $this->default = $default;
+                $this->final = $final;
             }
 
-            public function __invoke(\Next\Http\Request $request): \Next\Http\Response
+            /**
+             * @return \Next\Http\Response|\Next\Http\JsonResponse|\Next\Http\RedirectResponse
+             */
+            public function __invoke(\Next\Http\Request $request): mixed
             {
                 if (empty($this->middleware)) {
-                    return ($this->default)($request);
+                    return ($this->final)($request);
                 }
 
                 $current = array_shift($this->middleware);
@@ -148,10 +156,7 @@ class App extends \Illuminate\Container\Container
 
                 $collector->addRoute('*', "{$apiFilePath}/{$apiFileName}", [
                     'type' => 'api',
-                    'factory' => fn() => $this->applyMiddleware(
-                        request(),
-                        fn() => $this->call(require $apiFile),
-                    ),
+                    'factory' => fn() => $this->applyMiddleware(request(), fn() => $this->call(require $apiFile)),
                 ]);
             }
 
@@ -173,10 +178,7 @@ class App extends \Illuminate\Container\Container
 
                 $collector->addRoute('GET', "{$pageFilePath}/{$pageFileName}", [
                     'type' => 'page',
-                    'factory' => fn() => $this->applyMiddleware(
-                        request(),
-                        fn() => $this->call(require $pageFile),
-                    ),
+                    'factory' => fn() => $this->applyMiddleware(request(), fn() => $this->call(require $pageFile)),
                 ]);
             }
         });
@@ -195,19 +197,23 @@ class App extends \Illuminate\Container\Container
                 $request->setParams($routed[2]);
 
                 if ($routed[1]['type'] === 'api') {
-                    $content = $routed[1]['factory']($request);
-                    $this->dispatchResponse($content);
+                    $response = $routed[1]['factory']($request);
+                    $response->send();
                 }
 
                 if ($routed[1]['type'] === 'page') {
-                    $content = $routed[1]['factory']($request);
+                    $response = $routed[1]['factory']($request);
 
                     if (is_file("{$path}/_document.php")) {
                         $document = require "{$path}/_document.php";
-                        $content = $document($request, $this->unwrapResponse($content));
+                        $response = $document($request, $response->getContent());
+
+                        if (is_string($response)) {
+                            $response = \Next\Http\Response::create($response);
+                        }
                     }
 
-                    $this->dispatchResponse($content);
+                    $response->send();
                 }
 
                 break;
@@ -218,19 +224,6 @@ class App extends \Illuminate\Container\Container
         }
     }
 
-    private function dispatchResponse(mixed $response): void
-    {
-        $response = $this->negotiateResponse($response);
-
-        if (is_string($response)) {
-            $response = \Next\Http\Response::create($response);
-        }
-
-        if (method_exists($response, 'send')) {
-            $response->send();
-        }
-    }
-
     private function negotiateResponse(mixed $response): mixed
     {
         if ($response instanceof \Next\Http\RequestMethodNegotiator) {
@@ -238,17 +231,6 @@ class App extends \Illuminate\Container\Container
         }
         if ($response instanceof \Next\Http\ResponseTypeNegotiator) {
             return $this->negotiateResponse($response->negotiate());
-        }
-
-        return $response;
-    }
-
-    private function unwrapResponse(mixed $response): mixed
-    {
-        $response = $this->negotiateResponse($response);
-
-        if ($response instanceof \Symfony\Component\HttpFoundation\Response) {
-            $response = $response->getContent();
         }
 
         return $response;
