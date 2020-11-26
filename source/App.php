@@ -27,6 +27,8 @@ class App extends \Illuminate\Container\Container
         foreach ($paths as $key => $path) {
             $this->instance("path.{$key}", $path);
         }
+
+        $this->instance('path.framework', __DIR__ . '/../');
     }
 
     private function configureProxies()

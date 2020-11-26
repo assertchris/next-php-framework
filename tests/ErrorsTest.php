@@ -72,7 +72,9 @@ test('errors can enable safe HTML handler', function () use ($defaults) {
     $this->assertInstanceOf(\Next\Errors\SafeErrorHtmlHandler::class, $handler);
 });
 
-foreach (['500', '405', '404'] as $code) {
+$types = ['500' => 'Something went wrong.', '405' => 'Method not allowed.', '404' => 'Not found.'];
+
+foreach (array_keys($types) as $code) {
     test("errors can show a safe JSON {$code} error", function () use ($defaults, $code) {
         $app = new \Next\App(array_merge($defaults));
 
@@ -85,38 +87,30 @@ foreach (['500', '405', '404'] as $code) {
     });
 }
 
-test('errors can show a safe HTML 500 error', function () use ($defaults) {
-    $app = new \Next\App(array_merge($defaults));
+foreach ($types as $code => $message) {
+    test("errors can show custom safe HTML {$code} error", function () use ($defaults, $code, $message) {
+        $app = new \Next\App(array_merge($defaults));
 
-    ob_start();
-    $handler = new \Next\Errors\SafeErrorHtmlHandler();
-    $handler(new \Exception());
-    $content = ob_get_contents();
-    ob_end_clean();
+        ob_start();
+        $handler = new \Next\Errors\SafeErrorHtmlHandler();
+        $handler(new \Exception($code));
+        $content = ob_get_contents();
+        ob_end_clean();
 
-    $this->assertEquals('Something went wrong.', $content);
-});
+        $this->assertEquals($message, $content);
+    });
+}
 
-test('errors can show a safe HTML 405 error', function () use ($defaults) {
-    $app = new \Next\App(array_merge($defaults));
+foreach ($types as $code => $message) {
+    test("errors can show framework safe HTML {$code} error", function () use ($defaults, $code, $message) {
+        $app = new \Next\App(array_merge($defaults, ['paths' => ['pages' => 'missing']]));
 
-    ob_start();
-    $handler = new \Next\Errors\SafeErrorHtmlHandler();
-    $handler(new \Exception('405'));
-    $content = ob_get_contents();
-    ob_end_clean();
+        ob_start();
+        $handler = new \Next\Errors\SafeErrorHtmlHandler();
+        $handler(new \Exception($code));
+        $content = ob_get_contents();
+        ob_end_clean();
 
-    $this->assertEquals('Method not allowed.', $content);
-});
-
-test('errors can show a safe HTML 404 error', function () use ($defaults) {
-    $app = new \Next\App(array_merge($defaults));
-
-    ob_start();
-    $handler = new \Next\Errors\SafeErrorHtmlHandler();
-    $handler(new \Exception('404'));
-    $content = ob_get_contents();
-    ob_end_clean();
-
-    $this->assertEquals('Not found.', $content);
-});
+        $this->assertEquals($message, $content);
+    });
+}
