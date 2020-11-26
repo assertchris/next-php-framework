@@ -39,7 +39,7 @@ class App extends \Illuminate\Container\Container
 
                 $class::connect($this);
 
-                if ($class !== $alias) {
+                if (!class_exists($alias) && $class !== $alias) {
                     class_alias($class, $alias);
                 }
 
