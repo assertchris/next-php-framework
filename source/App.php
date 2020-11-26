@@ -66,13 +66,6 @@ class App extends \Illuminate\Container\Container
         $this->instance(\Next\Http\Request::class, $request);
         $this->instance(\Next\Http\Response::class, $response);
 
-        if (isset($this['config']['middleware'])) {
-            foreach ($this['config']['middleware'] as $middleware) {
-                $class = new $middleware();
-                $class->handle($this, $request, $response);
-            }
-        }
-
         $this->route($request);
     }
 
@@ -106,7 +99,7 @@ class App extends \Illuminate\Container\Container
 
                 $collector->addRoute('*', "{$apiFilePath}/{$apiFileName}", [
                     'type' => 'api',
-                    'factory' => fn() => $this->call(require $apiFile),
+                    'factory' => fn() => $this->applyMiddleware(request(), fn() => $this->call(require $apiFile)),
                 ]);
             }
 
@@ -128,7 +121,7 @@ class App extends \Illuminate\Container\Container
 
                 $collector->addRoute('GET', "{$pageFilePath}/{$pageFileName}", [
                     'type' => 'page',
-                    'factory' => fn() => $this->call(require $pageFile),
+                    'factory' => fn() => $this->applyMiddleware(request(), fn() => $this->call(require $pageFile)),
                 ]);
             }
         });
@@ -147,19 +140,23 @@ class App extends \Illuminate\Container\Container
                 $request->setParams($routed[2]);
 
                 if ($routed[1]['type'] === 'api') {
-                    $content = $routed[1]['factory']();
-                    $this->dispatchResponse($content);
+                    $response = $routed[1]['factory']();
+                    $response->send();
                 }
 
                 if ($routed[1]['type'] === 'page') {
-                    $content = $routed[1]['factory']();
+                    $response = $routed[1]['factory']();
 
                     if (is_file("{$path}/_document.php")) {
                         $document = require "{$path}/_document.php";
-                        $content = $document($request, $this->unwrapResponse($content));
+                        $response = $document($request, $response->getContent());
+
+                        if (is_string($response)) {
+                            $response = \Next\Http\Response::create($response);
+                        }
                     }
 
-                    $this->dispatchResponse($content);
+                    $response->send();
                 }
 
                 break;
@@ -170,37 +167,44 @@ class App extends \Illuminate\Container\Container
         }
     }
 
-    private function dispatchResponse(mixed $response): void
+    /**
+     * @return \Next\Http\Response|\Next\Http\JsonResponse|\Next\Http\RedirectResponse
+     */
+    private function applyMiddleware(\Next\Http\Request $request, \Closure $last): mixed
     {
-        $response = $this->negotiateResponse($response);
-
-        if (is_string($response)) {
-            $response = \Next\Http\Response::create($response);
+        if (!isset($this['config']['middleware']) || empty($this['config']['middleware'])) {
+            return $last($request);
         }
 
-        if (method_exists($response, 'send')) {
-            $response->send();
-        }
+        /**
+         * @return \Next\Http\Response|\Next\Http\JsonResponse|\Next\Http\RedirectResponse
+         */
+        $terminator = function (\Next\Http\Request $request) use ($last): mixed {
+            $response = $this->negotiate($last($request));
+
+            if (
+                $response instanceof \Next\Http\Response ||
+                $response instanceof \Next\Http\JsonResponse ||
+                $response instanceof \Next\Http\RedirectResponse
+            ) {
+                return $response;
+            }
+
+            return \Next\Http\Response::create($response);
+        };
+
+        $runner = new \Next\Middleware\Runner($this, $this['config']['middleware'], $terminator);
+
+        return $runner($request);
     }
 
-    private function negotiateResponse(mixed $response): mixed
+    private function negotiate(mixed $response): mixed
     {
         if ($response instanceof \Next\Http\RequestMethodNegotiator) {
-            return $this->negotiateResponse($response->negotiate());
+            return $this->negotiate($response->negotiate());
         }
         if ($response instanceof \Next\Http\ResponseTypeNegotiator) {
-            return $this->negotiateResponse($response->negotiate());
-        }
-
-        return $response;
-    }
-
-    private function unwrapResponse(mixed $response): mixed
-    {
-        $response = $this->negotiateResponse($response);
-
-        if ($response instanceof \Symfony\Component\HttpFoundation\Response) {
-            $response = $response->getContent();
+            return $this->negotiate($response->negotiate());
         }
 
         return $response;
