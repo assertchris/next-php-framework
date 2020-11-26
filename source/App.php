@@ -106,7 +106,7 @@ class App extends \Illuminate\Container\Container
 
                 $collector->addRoute('*', "{$apiFilePath}/{$apiFileName}", [
                     'type' => 'api',
-                    'factory' => fn () => $this->call(require $apiFile),
+                    'factory' => fn() => $this->call(require $apiFile),
                 ]);
             }
 
@@ -128,7 +128,7 @@ class App extends \Illuminate\Container\Container
 
                 $collector->addRoute('GET', "{$pageFilePath}/{$pageFileName}", [
                     'type' => 'page',
-                    'factory' => fn () => $this->call(require $pageFile),
+                    'factory' => fn() => $this->call(require $pageFile),
                 ]);
             }
         });

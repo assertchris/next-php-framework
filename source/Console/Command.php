@@ -2,24 +2,14 @@
 
 namespace Next\Console;
 
-use Next\App;
-use Symfony\Component\Console\Input\InputInterface;
-use Symfony\Component\Console\Output\OutputInterface;
-use Symfony\Component\Console\Style\SymfonyStyle;
-
 abstract class Command extends \Symfony\Component\Console\Command\Command
 {
-    protected App $app;
-
+    protected \Next\App $app;
     protected string $signature = '';
-
     protected string $description = '';
-
     protected string $help = '';
-
-    protected InputInterface $input;
-
-    protected OutputInterface $output;
+    protected \Symfony\Component\Console\Input\InputInterface $input;
+    protected \Symfony\Component\Console\Output\OutputInterface $output;
 
     public function __construct()
     {
@@ -29,21 +19,21 @@ abstract class Command extends \Symfony\Component\Console\Command\Command
 
         $this->setHelp($this->help);
         $this->setDescription($this->description);
-
         $this->getDefinition()->addArguments($arguments);
         $this->getDefinition()->addOptions($options);
     }
 
-    protected function execute(InputInterface $input, OutputInterface $output)
-    {
+    protected function execute(
+        \Symfony\Component\Console\Input\InputInterface $input,
+        \Symfony\Component\Console\Output\OutputInterface $output
+    ) {
         $this->input = $input;
-
-        $this->output = new SymfonyStyle($input, $output);
+        $this->output = new \Symfony\Component\Console\Style\SymfonyStyle($input, $output);
 
         return (int) $this->app->call([$this, 'handle']);
     }
 
-    public function setApp(App $app)
+    public function setApp(\Next\App $app)
     {
         $this->app = $app;
     }
@@ -53,7 +43,7 @@ abstract class Command extends \Symfony\Component\Console\Command\Command
         return $this->input->hasArgument($name);
     }
 
-    protected function argument(string $key): string|array|null
+    protected function argument(string $key): mixed
     {
         return $this->input->getArgument($key);
     }
@@ -68,7 +58,7 @@ abstract class Command extends \Symfony\Component\Console\Command\Command
         return $this->input->hasOption($name);
     }
 
-    protected function option(string $name): string|array|bool|null
+    protected function option(string $name): mixed
     {
         return $this->input->getOption($name);
     }
@@ -78,21 +68,21 @@ abstract class Command extends \Symfony\Component\Console\Command\Command
         return $this->input->getOptions();
     }
 
-    protected function parseVerbosity(int|string|null $level = null): int
+    protected function parseVerbosity(mixed $level = null): int
     {
         $levels = [
-            'v' => OutputInterface::VERBOSITY_VERBOSE,
-            'vv' => OutputInterface::VERBOSITY_VERY_VERBOSE,
-            'vvv' => OutputInterface::VERBOSITY_DEBUG,
-            'quiet' => OutputInterface::VERBOSITY_QUIET,
-            'normal' => OutputInterface::VERBOSITY_NORMAL,
+            'v' => \Symfony\Component\Console\Output\OutputInterface::VERBOSITY_VERBOSE,
+            'vv' => \Symfony\Component\Console\Output\OutputInterface::VERBOSITY_VERY_VERBOSE,
+            'vvv' => \Symfony\Component\Console\Output\OutputInterface::VERBOSITY_DEBUG,
+            'quiet' => \Symfony\Component\Console\Output\OutputInterface::VERBOSITY_QUIET,
+            'normal' => \Symfony\Component\Console\Output\OutputInterface::VERBOSITY_NORMAL,
         ];
 
         if (array_key_exists($level, $levels)) {
             return $levels[$level];
         }
 
-        if (! is_int($level)) {
+        if (!is_int($level)) {
             return $levels['normal'];
         }
 
@@ -104,39 +94,41 @@ abstract class Command extends \Symfony\Component\Console\Command\Command
         return $this->output->confirm($question, $default);
     }
 
-    public function ask(string $question, string|null $default = null): mixed
+    public function ask(string $question, mixed $default = null): mixed
     {
         return $this->output->ask($question, $default);
     }
 
-    protected function line(string $message, string $style = null, string|int|null $verbosity = null): void
+    protected function line(string $message, string $style = null, mixed $verbosity = null): void
     {
-        $message = $style ? "<$style>$message</$style>" : $message;
+        if ($style) {
+            $message = "<{$style}>$message</{$style}>";
+        }
 
         $this->output->writeln($message, $this->parseVerbosity($verbosity));
     }
 
-    protected function info(string $message, string|int $verbosity = null): void
+    protected function info(string $message, mixed $verbosity = null): void
     {
         $this->line($message, 'info', $verbosity);
     }
 
-    protected function comment(string $message, string|int $verbosity = null): void
+    protected function comment(string $message, mixed $verbosity = null): void
     {
         $this->line($message, 'comment', $verbosity);
     }
 
-    protected function question(string $question, string|int $verbosity = null): void
+    protected function question(string $question, mixed $verbosity = null): void
     {
         $this->line($question, 'question', $verbosity);
     }
 
-    protected function error(string $error, string|int $verbosity = null): void
+    protected function error(string $error, mixed $verbosity = null): void
     {
         $this->line($error, 'error', $verbosity);
     }
 
-    public function warn(string $string, string|int $verbosity = null): void
+    public function warn(string $string, mixed $verbosity = null): void
     {
         $this->line($string, 'warning', $verbosity);
     }
