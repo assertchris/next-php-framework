@@ -69,63 +69,6 @@ class App extends \Illuminate\Container\Container
         $this->route($request);
     }
 
-    /**
-     * @return \Next\Http\Response|\Next\Http\JsonResponse|\Next\Http\RedirectResponse
-     */
-    private function applyMiddleware(\Next\Http\Request $request, callable $next): mixed
-    {
-        if (!isset($this['config']['middleware']) || empty($this['config']['middleware'])) {
-            return $next($request);
-        }
-
-        /**
-         * @return \Next\Http\Response|\Next\Http\JsonResponse|\Next\Http\RedirectResponse
-         */
-        $final = function (\Next\Http\Request $request) use ($next): mixed {
-            $response = $this->negotiateResponse($next($request));
-
-            if (
-                $response instanceof \Next\Http\Response ||
-                $response instanceof \Next\Http\JsonResponse ||
-                $response instanceof \Next\Http\RedirectResponse
-            ) {
-                return $response;
-            }
-
-            return response($response);
-        };
-
-        $runner = new class ($this, $this['config']['middleware'], $final) {
-            private \Next\App $app;
-            private array $middleware;
-            private \Closure $final;
-
-            public function __construct(\Next\App $app, array $middleware, \Closure $final)
-            {
-                $this->app = $app;
-                $this->middleware = $middleware;
-                $this->final = $final;
-            }
-
-            /**
-             * @return \Next\Http\Response|\Next\Http\JsonResponse|\Next\Http\RedirectResponse
-             */
-            public function __invoke(\Next\Http\Request $request): mixed
-            {
-                if (empty($this->middleware)) {
-                    return ($this->final)($request);
-                }
-
-                $current = array_shift($this->middleware);
-                $next = clone $this;
-
-                return $this->app->make($current)->handle($request, $next);
-            }
-        };
-
-        return $runner($request);
-    }
-
     private function route(\Next\Http\Request $request)
     {
         $path = path('pages');
@@ -224,13 +167,44 @@ class App extends \Illuminate\Container\Container
         }
     }
 
-    private function negotiateResponse(mixed $response): mixed
+    /**
+     * @return \Next\Http\Response|\Next\Http\JsonResponse|\Next\Http\RedirectResponse
+     */
+    private function applyMiddleware(\Next\Http\Request $request, \Closure $last): mixed
+    {
+        if (!isset($this['config']['middleware']) || empty($this['config']['middleware'])) {
+            return $last($request);
+        }
+
+        /**
+         * @return \Next\Http\Response|\Next\Http\JsonResponse|\Next\Http\RedirectResponse
+         */
+        $terminator = function (\Next\Http\Request $request) use ($last): mixed {
+            $response = $this->negotiate($last($request));
+
+            if (
+                $response instanceof \Next\Http\Response ||
+                $response instanceof \Next\Http\JsonResponse ||
+                $response instanceof \Next\Http\RedirectResponse
+            ) {
+                return $response;
+            }
+
+            return \Next\Http\Response::create($response);
+        };
+
+        $runner = new \Next\Middleware\Runner($this, $this['config']['middleware'], $terminator);
+
+        return $runner($request);
+    }
+
+    private function negotiate(mixed $response): mixed
     {
         if ($response instanceof \Next\Http\RequestMethodNegotiator) {
-            return $this->negotiateResponse($response->negotiate());
+            return $this->negotiate($response->negotiate());
         }
         if ($response instanceof \Next\Http\ResponseTypeNegotiator) {
-            return $this->negotiateResponse($response->negotiate());
+            return $this->negotiate($response->negotiate());
         }
 
         return $response;
