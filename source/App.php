@@ -66,14 +66,56 @@ class App extends \Illuminate\Container\Container
         $this->instance(\Next\Http\Request::class, $request);
         $this->instance(\Next\Http\Response::class, $response);
 
-        if (isset($this['config']['middleware'])) {
-            foreach ($this['config']['middleware'] as $middleware) {
-                $class = new $middleware();
-                $class->handle($this, $request, $response);
-            }
+        $this->route($request);
+    }
+
+    private function applyMiddleware(\Next\Http\Request $request, callable $next): \Next\Http\Response
+    {
+        if (!isset($this['config']['middleware']) || empty($this['config']['middleware'])) {
+            return $next($request);
         }
 
-        $this->route($request);
+        $middleware = $this['config']['middleware'];
+
+        $default = function (\Next\Http\Request $request) use ($next): \Next\Http\Response {
+            $response = $this->negotiateResponse($next($request));
+
+            if ($response instanceof \Next\Http\Response) {
+                return $response;
+            }
+
+            return response($response);
+        };
+
+        $runner = new class ($this, $middleware, $default) {
+            private \Next\App $app;
+
+            private array $middleware;
+
+            /** @var callable */
+            private $default;
+
+            public function __construct(\Next\App $app, array $middleware, callable $default)
+            {
+                $this->app = $app;
+                $this->middleware = $middleware;
+                $this->default = $default;
+            }
+
+            public function __invoke(\Next\Http\Request $request): \Next\Http\Response
+            {
+                if (empty($this->middleware)) {
+                    return ($this->default)($request);
+                }
+
+                $current = array_shift($this->middleware);
+                $next = clone $this;
+
+                return $this->app->make($current)->handle($request, $next);
+            }
+        };
+
+        return $runner($request);
     }
 
     private function route(\Next\Http\Request $request)
@@ -106,7 +148,10 @@ class App extends \Illuminate\Container\Container
 
                 $collector->addRoute('*', "{$apiFilePath}/{$apiFileName}", [
                     'type' => 'api',
-                    'factory' => fn() => $this->call(require $apiFile),
+                    'factory' => fn() => $this->applyMiddleware(
+                        request(),
+                        fn() => $this->call(require $apiFile),
+                    ),
                 ]);
             }
 
@@ -128,7 +173,10 @@ class App extends \Illuminate\Container\Container
 
                 $collector->addRoute('GET', "{$pageFilePath}/{$pageFileName}", [
                     'type' => 'page',
-                    'factory' => fn() => $this->call(require $pageFile),
+                    'factory' => fn() => $this->applyMiddleware(
+                        request(),
+                        fn() => $this->call(require $pageFile),
+                    ),
                 ]);
             }
         });

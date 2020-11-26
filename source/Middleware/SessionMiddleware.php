@@ -4,8 +4,17 @@ namespace Next\Middleware;
 
 class SessionMiddleware
 {
-    public function handle(\Next\App $app, \Next\Http\Request $request, \Next\Http\Response $response)
+    private \Next\Session $session;
+
+    public function __construct(\Next\Session $session)
     {
-        $app[\Next\Session::class]->start();
+        $this->session = $session;
+    }
+
+    public function handle(\Next\Http\Request $request, callable $next)
+    {
+        $this->session->start();
+
+        return $next($request);
     }
 }
