@@ -1,27 +1,12 @@
 <?php
 
-declare(strict_types=1);
-
 namespace Next\Console;
-
-use Illuminate\Support\Str;
-use InvalidArgumentException;
-use Symfony\Component\Console\Input\InputArgument;
-use Symfony\Component\Console\Input\InputOption;
 
 /**
  * Based on Laravel 8's console component.
  */
-final class Parser
+class Parser
 {
-    /**
-     * Parse the given console command definition into an array.
-     *
-     * @param  string  $expression
-     * @return array
-     *
-     * @throws InvalidArgumentException
-     */
     public static function parse(string $expression): array
     {
         $name = self::name($expression);
@@ -35,29 +20,15 @@ final class Parser
         return [$name, [], []];
     }
 
-    /**
-     * Extract the name of the command from the expression.
-     *
-     * @param  string  $expression
-     * @return string
-     *
-     * @throws InvalidArgumentException
-     */
     protected static function name(string $expression): string
     {
         if (!preg_match('/[^\s]+/', $expression, $matches)) {
-            throw new InvalidArgumentException('Unable to determine command name from signature.');
+            throw new \InvalidArgumentException('Unable to determine command name from signature.');
         }
 
         return $matches[0];
     }
 
-    /**
-     * Extract all of the parameters from the tokens.
-     *
-     * @param  array  $tokens
-     * @return array
-     */
     protected static function parameters(array $tokens): array
     {
         $arguments = [];
@@ -75,48 +46,59 @@ final class Parser
         return [$arguments, $options];
     }
 
-    /**
-     * Parse an argument expression.
-     *
-     * @param  string  $token
-     * @return InputArgument
-     */
-    protected static function parseArgument(string $token): InputArgument
+    protected static function parseArgument(string $token): \Symfony\Component\Console\Input\InputArgument
     {
         [$token, $description] = self::extractDescription($token);
 
         switch (true) {
-            case Str::endsWith($token, '?*'):
-                return new InputArgument(trim($token, '?*'), InputArgument::IS_ARRAY, $description);
-            case Str::endsWith($token, '*'):
-                return new InputArgument(
-                    trim($token, '*'),
-                    InputArgument::IS_ARRAY | InputArgument::REQUIRED,
+            case str_ends_with($token, '?*'):
+                return new \Symfony\Component\Console\Input\InputArgument(
+                    trim($token, '?*'),
+                    \Symfony\Component\Console\Input\InputArgument::IS_ARRAY,
                     $description
                 );
-            case Str::endsWith($token, '?'):
-                return new InputArgument(trim($token, '?'), InputArgument::OPTIONAL, $description);
+
+            case str_ends_with($token, '*'):
+                return new \Symfony\Component\Console\Input\InputArgument(
+                    trim($token, '*'),
+                    \Symfony\Component\Console\Input\InputArgument::IS_ARRAY |
+                        \Symfony\Component\Console\Input\InputArgument::REQUIRED,
+                    $description
+                );
+
+            case str_ends_with($token, '?'):
+                return new \Symfony\Component\Console\Input\InputArgument(
+                    trim($token, '?'),
+                    \Symfony\Component\Console\Input\InputArgument::OPTIONAL,
+                    $description
+                );
+
             case preg_match('/(.+)=\*(.+)/', $token, $matches):
-                return new InputArgument(
+                return new \Symfony\Component\Console\Input\InputArgument(
                     $matches[1],
-                    InputArgument::IS_ARRAY,
+                    \Symfony\Component\Console\Input\InputArgument::IS_ARRAY,
                     $description,
                     preg_split('/,\s?/', $matches[2])
                 );
+
             case preg_match('/(.+)=(.+)/', $token, $matches):
-                return new InputArgument($matches[1], InputArgument::OPTIONAL, $description, $matches[2]);
+                return new \Symfony\Component\Console\Input\InputArgument(
+                    $matches[1],
+                    \Symfony\Component\Console\Input\InputArgument::OPTIONAL,
+                    $description,
+                    $matches[2]
+                );
+
             default:
-                return new InputArgument($token, InputArgument::REQUIRED, $description);
+                return new \Symfony\Component\Console\Input\InputArgument(
+                    $token,
+                    \Symfony\Component\Console\Input\InputArgument::REQUIRED,
+                    $description
+                );
         }
     }
 
-    /**
-     * Parse an option expression.
-     *
-     * @param  string  $token
-     * @return InputOption
-     */
-    protected static function parseOption(string $token): InputOption
+    protected static function parseOption(string $token): \Symfony\Component\Console\Input\InputOption
     {
         [$token, $description] = self::extractDescription($token);
 
@@ -130,40 +112,60 @@ final class Parser
         }
 
         switch (true) {
-            case Str::endsWith($token, '='):
-                return new InputOption(trim($token, '='), $shortcut, InputOption::VALUE_OPTIONAL, $description);
-            case Str::endsWith($token, '=*'):
-                return new InputOption(
-                    trim($token, '=*'),
+            case str_ends_with($token, '='):
+                return new \Symfony\Component\Console\Input\InputOption(
+                    trim($token, '='),
                     $shortcut,
-                    InputOption::VALUE_OPTIONAL | InputOption::VALUE_IS_ARRAY,
+                    \Symfony\Component\Console\Input\InputOption::VALUE_OPTIONAL,
                     $description
                 );
+
+            case str_ends_with($token, '=*'):
+                return new \Symfony\Component\Console\Input\InputOption(
+                    trim($token, '=*'),
+                    $shortcut,
+                    \Symfony\Component\Console\Input\InputOption::VALUE_OPTIONAL |
+                        \Symfony\Component\Console\Input\InputOption::VALUE_IS_ARRAY,
+                    $description
+                );
+
             case preg_match('/(.+)=\*(.+)/', $token, $matches):
-                return new InputOption(
+                return new \Symfony\Component\Console\Input\InputOption(
                     $matches[1],
                     $shortcut,
-                    InputOption::VALUE_OPTIONAL | InputOption::VALUE_IS_ARRAY,
+                    \Symfony\Component\Console\Input\InputOption::VALUE_OPTIONAL |
+                        \Symfony\Component\Console\Input\InputOption::VALUE_IS_ARRAY,
                     $description,
                     preg_split('/,\s?/', $matches[2])
                 );
+
             case preg_match('/(.+)=(.+)/', $token, $matches):
-                return new InputOption($matches[1], $shortcut, InputOption::VALUE_OPTIONAL, $description, $matches[2]);
+                return new \Symfony\Component\Console\Input\InputOption(
+                    $matches[1],
+                    $shortcut,
+                    \Symfony\Component\Console\Input\InputOption::VALUE_OPTIONAL,
+                    $description,
+                    $matches[2]
+                );
+
             default:
-                return new InputOption($token, $shortcut, InputOption::VALUE_NONE, $description);
+                return new \Symfony\Component\Console\Input\InputOption(
+                    $token,
+                    $shortcut,
+                    \Symfony\Component\Console\Input\InputOption::VALUE_NONE,
+                    $description
+                );
         }
     }
 
-    /**
-     * Parse the token into its token and description segments.
-     *
-     * @param  string  $token
-     * @return array
-     */
     protected static function extractDescription(string $token): array
     {
         $parts = preg_split('/\s+:\s+/', trim($token), 2);
 
-        return count($parts) === 2 ? $parts : [$token, ''];
+        if (count($parts) === 2) {
+            return $parts;
+        }
+
+        return [$token, ''];
     }
 }
