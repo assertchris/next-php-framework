@@ -2,20 +2,20 @@
 
 namespace Next\Errors;
 
-class SafeErrorPageHandler
+class SafeErrorHtmlHandler
 {
     public function __invoke(\Throwable $exception)
     {
         $app = \Next\App::getInstance();
 
         if ($exception->getMessage() === '404' || $exception->getMessage() === '405') {
-            $this->showSafeErrorPage($app, (int) $exception->getMessage());
+            $this->showSafeErrorHtml($app, (int) $exception->getMessage());
         }
 
-        $this->showSafeErrorPage($app, 500);
+        $this->showSafeErrorHtml($app, 500);
     }
 
-    private function showSafeErrorPage(\Next\App $app, int $code)
+    private function showSafeErrorHtml(\Next\App $app, int $code)
     {
         $path = $app['path.pages'];
         $request = $app[\Next\Http\Request::class];

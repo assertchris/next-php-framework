@@ -69,5 +69,5 @@ test('errors can enable safe HTML handler', function () use ($defaults) {
 
     $handler = Tests\valueOf($handlerStack[0], 'callable');
 
-    $this->assertInstanceOf(\Next\Errors\SafeErrorPageHandler::class, $handler);
+    $this->assertInstanceOf(\Next\Errors\SafeErrorHtmlHandler::class, $handler);
 });

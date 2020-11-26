@@ -32,6 +32,6 @@ class Proxy
             return;
         }
 
-        static::$connection->pushHandler(new \Whoops\Handler\CallbackHandler(new \Next\Errors\SafeErrorPageHandler()));
+        static::$connection->pushHandler(new \Whoops\Handler\CallbackHandler(new \Next\Errors\SafeErrorHtmlHandler()));
     }
 }
