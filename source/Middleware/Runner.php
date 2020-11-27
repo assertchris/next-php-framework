@@ -27,6 +27,10 @@ class Runner
         $current = array_shift($this->middleware);
         $next = clone $this;
 
-        return $this->app->make($current)->handle($request, $next);
+        if (! is_object($current)) {
+            $current = $this->app->make($current);
+        }
+
+        return $current->handle($request, $next);
     }
 }
