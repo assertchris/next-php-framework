@@ -4,6 +4,9 @@ namespace Next;
 
 class App extends \Illuminate\Container\Container
 {
+    /**
+     * @param array<string, mixed> $config
+     */
     public function __construct(array $config = [])
     {
         static::setInstance($this);
@@ -18,7 +21,10 @@ class App extends \Illuminate\Container\Container
         $this->configureProxies();
     }
 
-    private function configurePaths(array $paths = [])
+    /**
+     * @param array<string, string> $paths
+     */
+    private function configurePaths(array $paths = []): void
     {
         if (!isset($paths['pages'])) {
             throw new \InvalidArgumentException('paths.pages not defined');
@@ -31,7 +37,7 @@ class App extends \Illuminate\Container\Container
         $this->instance('path.framework', __DIR__ . '/../');
     }
 
-    private function configureProxies()
+    private function configureProxies(): void
     {
         if (isset($this['config']['proxies'])) {
             foreach ($this['config']['proxies'] as $alias => $class) {
@@ -50,7 +56,7 @@ class App extends \Illuminate\Container\Container
         }
     }
 
-    public function serve()
+    public function serve(): void
     {
         $request = \Next\Http\Request::capture();
         $response = \Next\Http\Response::create();
@@ -71,7 +77,7 @@ class App extends \Illuminate\Container\Container
         $this->route($request);
     }
 
-    private function route(\Next\Http\Request $request)
+    private function route(\Next\Http\Request $request): void
     {
         $path = path('pages');
         $allFiles = files($path);
@@ -136,7 +142,6 @@ class App extends \Illuminate\Container\Container
         switch ($routed[0]) {
             case \FastRoute\Dispatcher::METHOD_NOT_ALLOWED:
                 throw new \RuntimeException('405');
-                break;
 
             case \FastRoute\Dispatcher::FOUND:
                 $request->setParams($routed[2]);
@@ -165,7 +170,6 @@ class App extends \Illuminate\Container\Container
 
             default:
                 throw new \RuntimeException('404');
-                break;
         }
     }
 

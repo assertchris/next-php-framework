@@ -4,7 +4,10 @@ namespace Next\Http;
 
 class Response extends \Illuminate\Http\Response
 {
-    public function json(...$params)
+    /**
+     * @param array<mixed> $params
+     */
+    public function json(...$params): \Next\Http\JsonResponse
     {
         $response = new \Next\Http\JsonResponse(...$params);
 
@@ -13,16 +16,16 @@ class Response extends \Illuminate\Http\Response
         return $response;
     }
 
-    public function redirect(...$params)
+    public function redirect(string $url): \Next\Http\RedirectResponse
     {
-        $response = new \Next\Http\RedirectResponse(...$params);
+        $response = new \Next\Http\RedirectResponse($url);
 
         \Next\App::getInstance()->instance(static::class, $response);
 
         return $response;
     }
 
-    public function for()
+    public function for(): \Next\Http\ResponseTypeNegotiator
     {
         return new \Next\Http\ResponseTypeNegotiator();
     }

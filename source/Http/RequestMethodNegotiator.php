@@ -4,7 +4,11 @@ namespace Next\Http;
 
 class RequestMethodNegotiator
 {
+    /**
+     * @var array<string, callable>
+     */
     protected array $handlers = [];
+
     public const METHODS = ['get', 'post', 'patch', 'put', 'delete'];
 
     /**
@@ -17,11 +21,13 @@ class RequestMethodNegotiator
     }
 
     /**
+     * @param array<mixed> $params
+     *
      * @return static
      */
     public function __call(string $method, array $params = [])
     {
-        if (in_array($method, static::METHODS) || $type === 'default') {
+        if (in_array($method, static::METHODS) || $method === 'default') {
             return $this->handle($method, ...$params);
         }
 

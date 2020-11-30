@@ -3,7 +3,10 @@
 use Next\App;
 
 if (!function_exists('app')) {
-    function app($abstract = null, array $parameters = [])
+    /**
+     * @phpstan-ignore-next-line
+     */
+    function app(string $abstract = null, array $parameters = []): mixed
     {
         if (is_null($abstract)) {
             return App::getInstance();
@@ -39,7 +42,10 @@ if (!function_exists('path')) {
 }
 
 if (!function_exists('files')) {
-    function files($folder, $extension = 'php'): array
+    /**
+     * @return array<string>
+     */
+    function files(string $folder, string $extension = 'php'): array
     {
         $directory = new RecursiveDirectoryIterator($folder);
         $iterator = new RecursiveIteratorIterator($directory);

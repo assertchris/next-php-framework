@@ -7,7 +7,7 @@ class MigrateCommand extends \Next\Console\Command
     protected string $signature = 'migrate';
     protected string $description = 'Migrate the database';
 
-    public function handle(\Next\Database $connection)
+    public function handle(\Next\Database $connection): int
     {
         $count = 0;
         $this->line('Migrating');

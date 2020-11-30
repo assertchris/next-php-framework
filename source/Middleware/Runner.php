@@ -5,9 +5,17 @@ namespace Next\Middleware;
 class Runner
 {
     private \Next\App $app;
+
+    /**
+     * @var array<callable>
+     */
     private array $middleware;
+
     private \Closure $final;
 
+    /**
+     * @param array<callable> $middleware
+     */
     public function __construct(\Next\App $app, array $middleware, \Closure $final)
     {
         $this->app = $app;
@@ -27,7 +35,7 @@ class Runner
         $current = array_shift($this->middleware);
         $next = clone $this;
 
-        if (! is_object($current)) {
+        if (!is_object($current)) {
             $current = $this->app->make($current);
         }
 

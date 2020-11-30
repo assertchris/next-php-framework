@@ -4,7 +4,11 @@ namespace Next\Http;
 
 class ResponseTypeNegotiator
 {
+    /**
+     * @var array<string, callable>
+     */
     protected array $handlers = [];
+
     public const TYPES = ['html', 'json', 'xml', 'csv'];
 
     /**
@@ -17,6 +21,8 @@ class ResponseTypeNegotiator
     }
 
     /**
+     * @param array<mixed> $params
+     *
      * @return static
      */
     public function __call(string $type, array $params = [])

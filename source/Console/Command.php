@@ -33,9 +33,13 @@ abstract class Command extends \Symfony\Component\Console\Command\Command
         return (int) $this->app->call([$this, 'handle']);
     }
 
+    /**
+     * @return static
+     */
     public function setApp(\Next\App $app)
     {
         $this->app = $app;
+        return $this;
     }
 
     protected function hasArgument(string $name): bool
@@ -48,6 +52,9 @@ abstract class Command extends \Symfony\Component\Console\Command\Command
         return $this->input->getArgument($key);
     }
 
+    /**
+     * @return array<string, mixed>
+     */
     protected function arguments(): array
     {
         return $this->input->getArguments();
@@ -63,6 +70,9 @@ abstract class Command extends \Symfony\Component\Console\Command\Command
         return $this->input->getOption($name);
     }
 
+    /**
+     * @return array<string, mixed>
+     */
     protected function options(): array
     {
         return $this->input->getOptions();
@@ -91,11 +101,17 @@ abstract class Command extends \Symfony\Component\Console\Command\Command
 
     protected function confirm(string $question, bool $default = false): bool
     {
+        /**
+         * @phpstan-ignore-next-line
+         */
         return $this->output->confirm($question, $default);
     }
 
     public function ask(string $question, mixed $default = null): mixed
     {
+        /**
+         * @phpstan-ignore-next-line
+         */
         return $this->output->ask($question, $default);
     }
 
