@@ -4,45 +4,42 @@ namespace Next\Http;
 
 class ResponseTypeNegotiator
 {
-    protected array $handlers = [];
-    public const TYPES = ['html', 'json', 'xml', 'csv'];
+    /** @var array<string, \Closure> */
+    private array $handlers = [];
 
-    /**
-     * @return static
-     */
-    private function handle(string $type, \Closure $then)
+    private ?\Closure $fallback = null;
+
+    public function __call(string $method, array $arguments): self
     {
-        $this->handlers[$type] = $then;
+        $this->when($method, $arguments[0]);
+
         return $this;
     }
 
-    /**
-     * @return static
-     */
-    public function __call(string $type, array $params = [])
+    public function when(string $extension, \Closure $handler): self
     {
-        if (in_array($type, static::TYPES) || $type === 'default') {
-            return $this->handle($type, ...$params);
-        }
+        $this->handlers[$extension] = $handler;
 
-        throw new \InvalidArgumentException("Unsupported type {$type}");
+        return $this;
     }
 
-    public function negotiate(): mixed
+    public function fallback(\Closure $handler): self
     {
-        $request = \Next\App::getInstance()->make(\Next\Http\Request::class);
-        $currentType = strtolower($request->getPathInfoExtension());
+        $this->fallback = $handler;
 
-        foreach (static::TYPES as $type) {
-            if (isset($this->handlers[$type]) && $currentType === $type) {
-                return $this->handlers[$type]();
-            }
+        return $this;
+    }
+
+    public function negotiate(string $extension): mixed
+    {
+        if (array_key_exists($extension, $this->handlers)) {
+            return $this->handlers[$extension]();
         }
 
-        if (isset($this->handlers['default'])) {
-            return $this->handlers['default']();
+        if ($this->fallback !== null) {
+            return ($this->fallback)();
         }
 
-        throw new \RuntimeException("No content negotiator for {$currentType}");
+        throw new \RuntimeException("File extension {$extension} not supported");
     }
 }
