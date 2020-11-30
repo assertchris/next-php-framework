@@ -4,7 +4,7 @@ namespace Next\Errors;
 
 class SafeErrorHtmlHandler
 {
-    public function __invoke(\Throwable $exception)
+    public function __invoke(\Throwable $exception): void
     {
         $app = \Next\App::getInstance();
 
@@ -16,7 +16,7 @@ class SafeErrorHtmlHandler
         $this->showSafeErrorHtml($app, 500);
     }
 
-    private function showSafeErrorHtml(\Next\App $app, int $code)
+    private function showSafeErrorHtml(\Next\App $app, int $code): void
     {
         $path = $app['path.pages'];
         $request = $app[\Next\Http\Request::class];

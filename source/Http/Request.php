@@ -7,29 +7,38 @@ namespace Next\Http;
  */
 class Request extends \Illuminate\Http\Request
 {
+    /**
+     * @var \Symfony\Component\HttpFoundation\ParameterBag<string, mixed>
+     */
     protected $params;
 
+    /**
+     * @param array<string, mixed> $params
+     *
+     * @return static
+     */
     public function setParams(array $params)
     {
         $this->params = new \Symfony\Component\HttpFoundation\ParameterBag($params);
+        return $this;
     }
 
-    public function getParams()
+    public function getParams(): mixed
     {
         return $this->params;
     }
 
-    public function param(string $key)
+    public function param(string $key): mixed
     {
         return $this->params->get($key);
     }
 
-    public function when()
+    public function when(): \Next\Http\RequestMethodNegotiator
     {
         return new \Next\Http\RequestMethodNegotiator();
     }
 
-    public function getPathInfoWithoutExtension()
+    public function getPathInfoWithoutExtension(): string
     {
         $pathInfo = $this->getPathInfo();
         $pathInfoExtension = $this->getPathInfoExtension();
@@ -41,7 +50,10 @@ class Request extends \Illuminate\Http\Request
         return $pathInfo;
     }
 
-    public function getPathInfoExtension(): ?string
+    /**
+     * @return string|null
+     */
+    public function getPathInfoExtension(): mixed
     {
         return strtolower(pathinfo(parse_url($this->url(), PHP_URL_PATH), PATHINFO_EXTENSION));
     }

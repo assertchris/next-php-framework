@@ -4,7 +4,7 @@ namespace Next\Errors;
 
 class SafeErrorJsonHandler
 {
-    public function __invoke(\Throwable $exception)
+    public function __invoke(\Throwable $exception): void
     {
         $app = \Next\App::getInstance();
 
@@ -16,7 +16,7 @@ class SafeErrorJsonHandler
         $this->showSafeErrorJson($app, 500);
     }
 
-    private function showSafeErrorJson(\Next\App $app, int $code)
+    private function showSafeErrorJson(\Next\App $app, int $code): void
     {
         $app[\Next\Http\Response::class]->json([
             'status' => 'error',

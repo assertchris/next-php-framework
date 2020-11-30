@@ -11,7 +11,7 @@ class SessionMiddleware
         $this->session = $session;
     }
 
-    public function handle(\Next\Http\Request $request, callable $next)
+    public function handle(\Next\Http\Request $request, callable $next): mixed
     {
         $this->session->start();
 

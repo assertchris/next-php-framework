@@ -4,7 +4,8 @@
     "scripts": {
         "test": "vendor/bin/pest",
         "test:coverage": "vendor/bin/pest --coverage",
-        "format": "npm run format:php source"
+        "format": "npm run format:php source",
+        "lint": "vendor/bin/phpstan analyse -c ./linting/phpstan.neon"
     },
     "require": {
         "php": ">=8.0",
@@ -20,6 +21,7 @@
     },
     "require-dev": {
         "pestphp/pest": "^0.3.12",
+        "phpstan/phpstan": "^0.12.58",
         "phpunit/phpunit": "^9.3.10"
     },
     "autoload": {

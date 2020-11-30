@@ -5,9 +5,17 @@ namespace Next\Middleware;
 class Runner
 {
     private \Next\App $app;
+
+    /**
+     * @var array<callable>
+     */
     private array $middleware;
+
     private \Closure $final;
 
+    /**
+     * @param array<callable> $middleware
+     */
     public function __construct(\Next\App $app, array $middleware, \Closure $final)
     {
         $this->app = $app;

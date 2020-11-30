@@ -7,6 +7,9 @@ namespace Next\Console;
  */
 class Parser
 {
+    /**
+     * @return array<mixed>
+     */
     public static function parse(string $expression): array
     {
         $name = self::name($expression);
@@ -29,6 +32,11 @@ class Parser
         return $matches[0];
     }
 
+    /**
+     * @param array<string> $tokens
+     *
+     * @return array<mixed>
+     */
     protected static function parameters(array $tokens): array
     {
         $arguments = [];
@@ -158,6 +166,9 @@ class Parser
         }
     }
 
+    /**
+     * @return array<mixed>
+     */
     protected static function extractDescription(string $token): array
     {
         $parts = preg_split('/\s+:\s+/', trim($token), 2);
