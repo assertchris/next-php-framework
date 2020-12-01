@@ -4,13 +4,22 @@ namespace Next\Cookie;
 
 use Illuminate\Cookie\CookieJar;
 
+/**
+ * @method bool hasQueued(string $key, string $path = null)
+ * @method \Symfony\Component\HttpFoundation\Cookie|null queued(string $key, mixed $default = null, string $path = null)
+ * @method void queue(mixed ...$params)
+ */
 class Proxy
 {
     use \Next\Concerns\CannotBeCreated;
     use \Next\Concerns\ForwardsToConnection;
 
-    private static $config;
-    private static $request;
+    /**
+     * @var array<string, mixed>
+     */
+    private static array $config;
+
+    private static \Next\Http\Request $request;
 
     public static function connect(\Next\App $app): void
     {
@@ -55,18 +64,21 @@ class Proxy
     }
 
     /**
+     * @param bool|null $secure
+     * @param string|null $sameSite
+     *
      * @return static
      */
     public function put(
-        $name,
-        $value,
-        $minutes = 2628000,
-        $path = null,
-        $domain = null,
-        $secure = null,
-        $httpOnly = true,
-        $raw = false,
-        $sameSite = null
+        string $name,
+        mixed $value,
+        int $minutes = 2628000,
+        string $path = null,
+        string $domain = null,
+        mixed $secure = null,
+        bool $httpOnly = true,
+        bool $raw = false,
+        mixed $sameSite = null
     ): mixed {
         $this->queue($name, $value, $minutes, $path, $domain, $secure, $httpOnly, $raw, $sameSite);
         return $this;
