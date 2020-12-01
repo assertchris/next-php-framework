@@ -14,7 +14,7 @@ class RequestMethodNegotiator
         'OPTIONS' => null,
     ];
 
-    private ?\Closure $fallback = null;
+    private ?\Closure $default = null;
 
     public function __construct()
     {
@@ -58,9 +58,9 @@ class RequestMethodNegotiator
         return $this->when('options', $handler);
     }
 
-    public function fallback(\Closure $handler): static
+    public function default(\Closure $handler): static
     {
-        $this->fallback = $handler;
+        $this->default = $handler;
 
         return $this;
     }
@@ -83,8 +83,8 @@ class RequestMethodNegotiator
             return $this->handlers[$method]();
         }
 
-        if ($this->fallback !== null) {
-            return ($this->fallback)();
+        if ($this->default !== null) {
+            return ($this->default)();
         }
 
         throw new \RuntimeException("No content negotiator for {$method}");

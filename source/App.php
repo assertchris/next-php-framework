@@ -56,9 +56,9 @@ class App extends \Illuminate\Container\Container
         }
     }
 
-    public function serve(): void
+    public function serve(\Next\Http\Request $request = null): \Next\Http\Response
     {
-        $request = \Next\Http\Request::capture();
+        $request = $request ?? \Next\Http\Request::capture();
         $response = \Next\Http\Response::create();
 
         if ($this->has(\Next\Errors::class)) {
@@ -74,10 +74,10 @@ class App extends \Illuminate\Container\Container
         $this->instance(\Next\Http\Request::class, $request);
         $this->instance(\Next\Http\Response::class, $response);
 
-        $this->route($request);
+        return $this->route($request);
     }
 
-    private function route(\Next\Http\Request $request): void
+    private function route(\Next\Http\Request $request): \Next\Http\Response
     {
         $path = path('pages');
         $allFiles = files($path);
@@ -85,6 +85,7 @@ class App extends \Illuminate\Container\Container
         $pageFiles = array_diff($allFiles, $apiFiles);
 
         $dispatcher = \FastRoute\simpleDispatcher(function (\FastRoute\RouteCollector $collector) use (
+            $request,
             $path,
             $apiFiles,
             $pageFiles
@@ -107,7 +108,7 @@ class App extends \Illuminate\Container\Container
 
                 $collector->addRoute('*', "{$apiFilePath}/{$apiFileName}", [
                     'type' => 'api',
-                    'factory' => fn() => $this->applyMiddleware(request(), fn() => $this->call(require $apiFile)),
+                    'factory' => fn() => $this->applyMiddleware($request, fn() => $this->call(require $apiFile)),
                 ]);
             }
 
@@ -129,7 +130,7 @@ class App extends \Illuminate\Container\Container
 
                 $collector->addRoute('GET', "{$pageFilePath}/{$pageFileName}", [
                     'type' => 'page',
-                    'factory' => fn() => $this->applyMiddleware(request(), fn() => $this->call(require $pageFile)),
+                    'factory' => fn() => $this->applyMiddleware($request, fn() => $this->call(require $pageFile)),
                 ]);
             }
         });
@@ -148,7 +149,12 @@ class App extends \Illuminate\Container\Container
 
                 if ($routed[1]['type'] === 'api') {
                     $response = $routed[1]['factory']();
-                    $response->send();
+
+                    if (is_string($response)) {
+                        $response = \Next\Http\Response::create($response);
+                    }
+
+                    return $response;
                 }
 
                 if ($routed[1]['type'] === 'page') {
@@ -158,12 +164,13 @@ class App extends \Illuminate\Container\Container
                         $document = require "{$path}/_document.php";
                         $response = $document($request, $response->getContent());
 
-                        if (is_string($response)) {
-                            $response = \Next\Http\Response::create($response);
-                        }
                     }
 
-                    $response->send();
+                    if (is_string($response)) {
+                        $response = \Next\Http\Response::create($response);
+                    }
+
+                    return $response;
                 }
 
                 break;
@@ -179,14 +186,14 @@ class App extends \Illuminate\Container\Container
     private function applyMiddleware(\Next\Http\Request $request, \Closure $last): mixed
     {
         if (!isset($this['config']['middleware']) || empty($this['config']['middleware'])) {
-            return $last($request);
+            return $this->negotiate($request, $last($request));
         }
 
         /**
          * @return \Next\Http\Response|\Next\Http\JsonResponse|\Next\Http\RedirectResponse
          */
         $terminator = function (\Next\Http\Request $request) use ($last): mixed {
-            $response = $this->negotiate($last($request));
+            $response = $this->negotiate($request, $last($request));
 
             if (
                 $response instanceof \Next\Http\Response ||
@@ -204,13 +211,14 @@ class App extends \Illuminate\Container\Container
         return $runner($request);
     }
 
-    private function negotiate(mixed $response): mixed
+    private function negotiate(\Next\Http\Request $request, mixed $response): mixed
     {
         if ($response instanceof \Next\Http\RequestMethodNegotiator) {
-            return $this->negotiate($response->negotiate());
+            return $this->negotiate($request, $response->negotiate($request->getMethod()));
         }
+
         if ($response instanceof \Next\Http\ResponseTypeNegotiator) {
-            return $this->negotiate($response->negotiate());
+            return $this->negotiate($request, $response->negotiate($request->getPathInfoExtension()));
         }
 
         return $response;

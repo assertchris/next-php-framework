@@ -7,11 +7,11 @@ class ResponseTypeNegotiator
     /** @var array<string, \Closure> */
     private array $handlers = [];
 
-    private ?\Closure $fallback = null;
+    private ?\Closure $default = null;
 
     public function __call(string $method, array $arguments): self
     {
-        $this->when($method, $arguments[0]);
+        $this->when($method, array_shift($arguments));
 
         return $this;
     }
@@ -23,9 +23,9 @@ class ResponseTypeNegotiator
         return $this;
     }
 
-    public function fallback(\Closure $handler): self
+    public function default(\Closure $handler): self
     {
-        $this->fallback = $handler;
+        $this->default = $handler;
 
         return $this;
     }
@@ -36,8 +36,8 @@ class ResponseTypeNegotiator
             return $this->handlers[$extension]();
         }
 
-        if ($this->fallback !== null) {
-            return ($this->fallback)();
+        if ($this->default !== null) {
+            return ($this->default)();
         }
 
         throw new \RuntimeException("File extension {$extension} not supported");
