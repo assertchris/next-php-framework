@@ -158,19 +158,23 @@ class App extends \Illuminate\Container\Container
                 }
 
                 if ($routed[1]['type'] === 'page') {
-                    $response = $routed[1]['factory']();
+                    $baseResponse = $routed[1]['factory']();
 
                     if (is_file("{$path}/_document.php")) {
                         $document = require "{$path}/_document.php";
-                        $response = $document($request, $response->getContent());
+                        $layoutResponse = $document($request, $baseResponse->getContent());
 
+                        if (is_string($layoutResponse)) {
+                            $layoutResponse = \Next\Http\Response::create($layoutResponse);
+                            $layoutResponse->headers->add($baseResponse->headers->all());
+                        }
                     }
 
-                    if (is_string($response)) {
-                        $response = \Next\Http\Response::create($response);
+                    if (is_string($baseResponse)) {
+                        $baseResponse = \Next\Http\Response::create($baseResponse);
                     }
 
-                    return $response;
+                    return $baseResponse;
                 }
 
                 break;
