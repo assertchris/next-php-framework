@@ -12,7 +12,11 @@ class Proxy
         static::$connection = $connection = new \Rakit\Validation\Validator();
 
         \Next\Http\Request::macro('validate', function (array $rules = [], array $messages = []) use ($connection) {
-            /** @phpstan-ignore-next-line */
+            /**
+             * $this is a reference to the \Next\Http\Request instance
+             *
+             * @phpstan-ignore-next-line
+             */
             $validation = $connection->make($this->only(array_keys($rules)), $rules, $messages);
             $validation->validate();
 
