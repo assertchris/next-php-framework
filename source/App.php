@@ -56,7 +56,10 @@ class App extends \Illuminate\Container\Container
         }
     }
 
-    public function serve(\Next\Http\Request $request = null): \Next\Http\Response
+    /**
+     * @return \Next\Http\Response|\Next\Http\JsonResponse|\Next\Http\RedirectResponse
+     */
+    public function serve(\Next\Http\Request $request = null): mixed
     {
         $request = $request ?? \Next\Http\Request::capture();
         $response = \Next\Http\Response::create();
@@ -77,7 +80,10 @@ class App extends \Illuminate\Container\Container
         return $this->route($request);
     }
 
-    private function route(\Next\Http\Request $request): \Next\Http\Response
+    /**
+     * @return \Next\Http\Response|\Next\Http\JsonResponse|\Next\Http\RedirectResponse
+     */
+    private function route(\Next\Http\Request $request): mixed
     {
         $path = path('pages');
         $allFiles = files($path);
@@ -168,6 +174,8 @@ class App extends \Illuminate\Container\Container
                             $layoutResponse = \Next\Http\Response::create($layoutResponse);
                             $layoutResponse->headers->add($baseResponse->headers->all());
                         }
+
+                        return $layoutResponse;
                     }
 
                     if (is_string($baseResponse)) {
