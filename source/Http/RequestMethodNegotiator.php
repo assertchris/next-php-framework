@@ -18,68 +18,92 @@ class RequestMethodNegotiator
 
     public function __construct()
     {
-        $this->when('options', fn () => $this->defaultOptionsHandler());
+        $this->when('options', fn() => $this->defaultOptionsHandler());
     }
 
-    private function when(string $method, \Closure $handler): static
+    /**
+     * @return static
+     */
+    private function when(string $method, \Closure $handler): mixed
     {
         $this->handlers[strtoupper($method)] = $handler;
 
         return $this;
     }
 
-    public function get(\Closure $handler): static
+    /**
+     * @return static
+     */
+    public function get(\Closure $handler): mixed
     {
         return $this->when('get', $handler);
     }
 
-    public function post(\Closure $handler): static
+    /**
+     * @return static
+     */
+    public function post(\Closure $handler): mixed
     {
         return $this->when('post', $handler);
     }
 
-    public function patch(\Closure $handler): static
+    /**
+     * @return static
+     */
+    public function patch(\Closure $handler): mixed
     {
         return $this->when('patch', $handler);
     }
 
-    public function put(\Closure $handler): static
+    /**
+     * @return static
+     */
+    public function put(\Closure $handler): mixed
     {
         return $this->when('put', $handler);
     }
 
-    public function delete(\Closure $handler): static
+    /**
+     * @return static
+     */
+    public function delete(\Closure $handler): mixed
     {
         return $this->when('delete', $handler);
     }
 
-    public function options(\Closure $handler): static
+    /**
+     * @return static
+     */
+    public function options(\Closure $handler): mixed
     {
         return $this->when('options', $handler);
     }
 
-    public function default(\Closure $handler): static
+    /**
+     * @return static
+     */
+    public function default(\Closure $handler): mixed
     {
         $this->default = $handler;
 
         return $this;
     }
 
-    private function defaultOptionsHandler(): \Next\Http\Response
+    /**
+     * @return \Next\Http\Response|\Next\Http\JsonResponse|\Next\Http\RedirectResponse
+     */
+    private function defaultOptionsHandler(): mixed
     {
         return response()
             ->setStatusCode(204)
-            ->header(
-                'Allow',
-                implode(', ', array_keys(array_filter($this->handlers))),
-            );
+            ->header('Allow', implode(', ', array_keys(array_filter($this->handlers))));
     }
 
     public function negotiate(string $method): mixed
     {
         $method = strtoupper($method);
 
-        if (! empty($this->handlers[$method])) {
+        if (!empty($this->handlers[$method])) {
             return $this->handlers[$method]();
         }
 

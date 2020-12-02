@@ -16,16 +16,24 @@ class TestResponse
         $this->baseResponse = $response;
     }
 
-    public static function fromBaseResponse(\Next\Http\Response $response): static
+    /**
+     * @return static
+     */
+    public static function fromBaseResponse(\Next\Http\Response $response): mixed
     {
         return new static($response);
     }
 
-    public function assertSee(string|array $value, bool $escape = true): self
+    /**
+     * @param string|array<string> $value
+     *
+     * @return static
+     */
+    public function assertSee(mixed $value, bool $escape = true): mixed
     {
         $value = is_array($value) ? $value : [$value];
 
-        $values = $escape ? array_map('e', ($value)) : $value;
+        $values = $escape ? array_map('e', $value) : $value;
 
         foreach ($values as $value) {
             \PHPUnit\Framework\Assert::assertStringContainsString((string) $value, $this->getContent());
@@ -34,21 +42,34 @@ class TestResponse
         return $this;
     }
 
-    public function assertJson(array $data, bool $strict = false): self
+    /**
+     * @return static
+     */
+    public function assertJson(array $data, bool $strict = false): mixed
     {
         \PHPUnit\Framework\Assert::assertEquals($data, json_decode($this->getContent()));
 
         return $this;
     }
 
-    public function assertHeader(string $headerName, mixed $value = null): self
+    /**
+     * @return static
+     */
+    public function assertHeader(string $headerName, mixed $value = null): mixed
     {
-        \PHPUnit\Framework\Assert::assertTrue($this->headers->has($headerName), "Header [{$headerName}] not present on response.");
+        \PHPUnit\Framework\Assert::assertTrue(
+            $this->headers->has($headerName),
+            "Header [{$headerName}] not present on response."
+        );
 
         $actual = $this->headers->get($headerName);
 
         if (!is_null($value)) {
-            \PHPUnit\Framework\Assert::assertEquals($value, $this->headers->get($headerName), "Header [{$headerName}] was found, but value [{$actual}] does not match [{$value}].");
+            \PHPUnit\Framework\Assert::assertEquals(
+                $value,
+                $this->headers->get($headerName),
+                "Header [{$headerName}] was found, but value [{$actual}] does not match [{$value}]."
+            );
         }
 
         return $this;
@@ -66,6 +87,6 @@ class TestResponse
 
     public function __call(string $method, array $args): mixed
     {
-        return $this->baseResponse->{$method}(... $args);
+        return $this->baseResponse->{$method}(...$args);
     }
 }
