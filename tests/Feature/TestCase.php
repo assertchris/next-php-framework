@@ -12,12 +12,12 @@ class TestCase extends \PHPUnit\Framework\TestCase
             'paths' => [
                 'pages' => __DIR__ . '/pages',
             ],
-       ]);
+        ]);
     }
 
     private function handle(string $method, string $uri, array $parameters = []): \Next\Testing\TestResponse
     {
-        $request = \Next\Http\request::create($uri, $method, $parameters);
+        $request = \Next\Http\Request::create($uri, $method, $parameters);
 
         return \Next\Testing\TestResponse::fromBaseResponse($this->app->serve($request));
     }
@@ -29,7 +29,7 @@ class TestCase extends \PHPUnit\Framework\TestCase
 
     public function post(string $uri, array $parameters = []): \Next\Testing\TestResponse
     {
-        return $this->handle('POST', $uri,  $parameters);
+        return $this->handle('POST', $uri, $parameters);
     }
 
     public function put(string $uri, array $parameters = []): \Next\Testing\TestResponse
