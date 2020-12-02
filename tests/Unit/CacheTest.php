@@ -9,14 +9,16 @@ $defaults = [
     ],
 ];
 
-$app = new \Next\App($defaults);
+test('cache is stored in the container', function () use ($defaults) {
+    $app = new \Next\App($defaults);
 
-test('cache is stored in the container', function () use ($app) {
     $this->assertInstanceOf(\Next\Cache\Proxy::class, $app[\Next\Cache::class]);
     $this->assertInstanceOf(\Next\Cache\Proxy::class, \Next\Cache::getInstance());
 });
 
-test('cache can put and get', function () use ($app) {
+test('cache can put and get', function () use ($defaults) {
+    $app = new \Next\App($defaults);
+
     $cache = $app[\Next\Cache::class];
     $cache->put('i-can-put-and-get', 'i can put and get', 1); // ← has ttl
 
@@ -25,21 +27,27 @@ test('cache can put and get', function () use ($app) {
     $this->assertEquals($cache->get('i-can-put-and-get'), null);
 });
 
-test('cache can put and get forever', function () use ($app) {
+test('cache can put and get forever', function () use ($defaults) {
+    $app = new \Next\App($defaults);
+
     $cache = $app[\Next\Cache::class];
     $cache->put('i-can-put-and-get-forever', 'i can put and get forever'); // ← has no ttl
 
     $this->assertEquals($cache->get('i-can-put-and-get-forever'), 'i can put and get forever');
 });
 
-test('cache can have', function () use ($app) {
+test('cache can have', function () use ($defaults) {
+    $app = new \Next\App($defaults);
+
     $cache = $app[\Next\Cache::class];
     $cache->put('i-can-have', 'i-can-have');
 
     $this->assertTrue($cache->has('i-can-have'));
 });
 
-test('cache can remember', function () use ($app) {
+test('cache can remember', function () use ($defaults) {
+    $app = new \Next\App($defaults);
+
     $cache = $app[\Next\Cache::class];
 
     $result = $cache->remember('i-can-remember', fn() => 'i can remember', 1); // ← has ttl
@@ -50,7 +58,9 @@ test('cache can remember', function () use ($app) {
     $this->assertEquals($cache->get('i-can-remember'), null);
 });
 
-test('cache can remember forever', function () use ($app) {
+test('cache can remember forever', function () use ($defaults) {
+    $app = new \Next\App($defaults);
+
     $cache = $app[\Next\Cache::class];
 
     $result = $cache->remember('i-can-remember-forever', fn() => 'i can remember forever'); // ← has no ttl
@@ -59,7 +69,9 @@ test('cache can remember forever', function () use ($app) {
     $this->assertEquals($cache->get('i-can-remember-forever'), 'i can remember forever');
 });
 
-test('cache can forget', function () use ($app) {
+test('cache can forget', function () use ($defaults) {
+    $app = new \Next\App($defaults);
+
     $cache = $app[\Next\Cache::class];
     $cache->put('i-can-forget', 'i can forget');
     $cache->forget('i-can-forget');
@@ -67,7 +79,9 @@ test('cache can forget', function () use ($app) {
     $this->assertEquals($cache->get('i-can-forget'), null);
 });
 
-test('cache can flush', function () use ($app) {
+test('cache can flush', function () use ($defaults) {
+    $app = new \Next\App($defaults);
+
     $cache = $app[\Next\Cache::class];
     $cache->put('i-can-flush', 'i can flush');
     $cache->flush();
@@ -75,7 +89,9 @@ test('cache can flush', function () use ($app) {
     $this->assertEquals($cache->get('i-can-forget'), null);
 });
 
-test('cache can add', function () use ($app) {
+test('cache can add', function () use ($defaults) {
+    $app = new \Next\App($defaults);
+
     $cache = $app[\Next\Cache::class];
     $cache->add('i-can-add', 'i can add');
 
@@ -86,7 +102,9 @@ test('cache can add', function () use ($app) {
     $this->assertEquals($cache->get('i-can-add'), 'i can add');
 });
 
-test('cache can default', function () use ($app) {
+test('cache can default', function () use ($defaults) {
+    $app = new \Next\App($defaults);
+
     $cache = $app[\Next\Cache::class];
 
     $this->assertEquals($cache->get('i-can-default', 123), 123);
