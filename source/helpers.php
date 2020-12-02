@@ -24,6 +24,9 @@ if (!function_exists('request')) {
 }
 
 if (!function_exists('response')) {
+    /**
+     * @return \Next\Http\Response|\Next\Http\JsonResponse|\Next\Http\RedirectResponse
+     */
     function response(string $content = null): mixed
     {
         if ($content) {

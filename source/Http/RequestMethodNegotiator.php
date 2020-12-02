@@ -5,50 +5,112 @@ namespace Next\Http;
 class RequestMethodNegotiator
 {
     /**
-     * @var array<string, callable>
+     * @var array<string, ?\Closure>
      */
-    protected array $handlers = [];
+    protected array $handlers = [
+        'GET' => null,
+        'POST' => null,
+        'PATCH' => null,
+        'PUT' => null,
+        'DELETE' => null,
+        'OPTIONS' => null,
+    ];
 
-    public const METHODS = ['get', 'post', 'patch', 'put', 'delete'];
+    private ?\Closure $default = null;
+
+    public function __construct()
+    {
+        $this->when('options', fn() => $this->defaultOptionsHandler());
+    }
 
     /**
      * @return static
      */
-    private function handle(string $method, \Closure $then)
+    private function when(string $method, \Closure $handler): mixed
     {
-        $this->handlers[$method] = $then;
+        $this->handlers[strtoupper($method)] = $handler;
         return $this;
     }
 
     /**
-     * @param array<mixed> $params
-     *
      * @return static
      */
-    public function __call(string $method, array $params = [])
+    public function get(\Closure $handler): mixed
     {
-        if (in_array($method, static::METHODS) || $method === 'default') {
-            return $this->handle($method, ...$params);
-        }
-
-        throw new \InvalidArgumentException("Unsupported method {$method}");
+        return $this->when('get', $handler);
     }
 
-    public function negotiate(): mixed
+    /**
+     * @return static
+     */
+    public function post(\Closure $handler): mixed
     {
-        $request = \Next\App::getInstance()->make(\Next\Http\Request::class);
-        $currentMethod = strtolower($request->method());
+        return $this->when('post', $handler);
+    }
 
-        foreach (static::METHODS as $method) {
-            if (isset($this->handlers[$method]) && $currentMethod === $method) {
-                return $this->handlers[$method]();
-            }
+    /**
+     * @return static
+     */
+    public function patch(\Closure $handler): mixed
+    {
+        return $this->when('patch', $handler);
+    }
+
+    /**
+     * @return static
+     */
+    public function put(\Closure $handler): mixed
+    {
+        return $this->when('put', $handler);
+    }
+
+    /**
+     * @return static
+     */
+    public function delete(\Closure $handler): mixed
+    {
+        return $this->when('delete', $handler);
+    }
+
+    /**
+     * @return static
+     */
+    public function options(\Closure $handler): mixed
+    {
+        return $this->when('options', $handler);
+    }
+
+    /**
+     * @return static
+     */
+    public function default(\Closure $handler): mixed
+    {
+        $this->default = $handler;
+        return $this;
+    }
+
+    /**
+     * @return \Next\Http\Response|\Next\Http\JsonResponse|\Next\Http\RedirectResponse
+     */
+    private function defaultOptionsHandler(): mixed
+    {
+        return response()
+            ->setStatusCode(204)
+            ->header('Allow', implode(', ', array_keys(array_filter($this->handlers))));
+    }
+
+    public function negotiate(string $method): mixed
+    {
+        $method = strtoupper($method);
+
+        if (!empty($this->handlers[$method])) {
+            return $this->handlers[$method]();
         }
 
-        if (isset($this->handlers['default'])) {
-            return $this->handlers['default']();
+        if ($this->default !== null) {
+            return ($this->default)();
         }
 
-        throw new \RuntimeException("No content negotiator for {$currentMethod}");
+        throw new \RuntimeException("No content negotiator for {$method}");
     }
 }

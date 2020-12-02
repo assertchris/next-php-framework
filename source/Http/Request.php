@@ -55,14 +55,6 @@ class Request extends \Illuminate\Http\Request
      */
     public function getPathInfoExtension(): mixed
     {
-        $pathInfo = $this->getPathInfo();
-
-        foreach (\Next\Http\ResponseTypeNegotiator::TYPES as $type) {
-            if (str_ends_with($pathInfo, ".{$type}")) {
-                return $type;
-            }
-        }
-
-        return null;
+        return strtolower(pathinfo(parse_url($this->url(), PHP_URL_PATH), PATHINFO_EXTENSION));
     }
 }

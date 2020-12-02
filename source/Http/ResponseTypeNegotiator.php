@@ -5,50 +5,43 @@ namespace Next\Http;
 class ResponseTypeNegotiator
 {
     /**
-     * @var array<string, callable>
+     * @var array<string, \Closure>
      */
-    protected array $handlers = [];
+    private array $handlers = [];
 
-    public const TYPES = ['html', 'json', 'xml', 'csv'];
+    private ?\Closure $default = null;
 
     /**
-     * @return static
+     * @param array<int, mixed> $params
      */
-    private function handle(string $type, \Closure $then)
+    public function __call(string $method, array $params): self
     {
-        $this->handlers[$type] = $then;
+        $this->when($method, array_shift($params));
         return $this;
     }
 
-    /**
-     * @param array<mixed> $params
-     *
-     * @return static
-     */
-    public function __call(string $type, array $params = [])
+    public function when(string $extension, \Closure $handler): self
     {
-        if (in_array($type, static::TYPES) || $type === 'default') {
-            return $this->handle($type, ...$params);
-        }
-
-        throw new \InvalidArgumentException("Unsupported type {$type}");
+        $this->handlers[$extension] = $handler;
+        return $this;
     }
 
-    public function negotiate(): mixed
+    public function default(\Closure $handler): self
     {
-        $request = \Next\App::getInstance()->make(\Next\Http\Request::class);
-        $currentType = strtolower($request->getPathInfoExtension());
+        $this->default = $handler;
+        return $this;
+    }
 
-        foreach (static::TYPES as $type) {
-            if (isset($this->handlers[$type]) && $currentType === $type) {
-                return $this->handlers[$type]();
-            }
+    public function negotiate(string $extension): mixed
+    {
+        if (array_key_exists($extension, $this->handlers)) {
+            return $this->handlers[$extension]();
         }
 
-        if (isset($this->handlers['default'])) {
-            return $this->handlers['default']();
+        if ($this->default !== null) {
+            return ($this->default)();
         }
 
-        throw new \RuntimeException("No content negotiator for {$currentType}");
+        throw new \RuntimeException("File extension {$extension} not supported");
     }
 }
