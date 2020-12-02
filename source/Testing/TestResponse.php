@@ -21,6 +21,9 @@ class TestResponse
      */
     public static function fromBaseResponse(\Next\Http\Response $response): mixed
     {
+        /**
+         * @phpstan-ignore-next-line
+         */
         return new static($response);
     }
 
@@ -43,6 +46,8 @@ class TestResponse
     }
 
     /**
+     * @param array<string, mixed> $data
+     *
      * @return static
      */
     public function assertJson(array $data, bool $strict = false): mixed
@@ -85,8 +90,11 @@ class TestResponse
         return isset($this->baseResponse->{$key});
     }
 
-    public function __call(string $method, array $args): mixed
+    /**
+     * @param array<int, mixed> $params
+     */
+    public function __call(string $method, array $params): mixed
     {
-        return $this->baseResponse->{$method}(...$args);
+        return $this->baseResponse->{$method}(...$params);
     }
 }

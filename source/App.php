@@ -146,6 +146,11 @@ class App extends \Illuminate\Container\Container
 
         $routed = $dispatcher->dispatch($httpMethod, $httpPath);
 
+        /**
+         * stan doesn't see that the default case will throw...
+         *
+         * @phpstan-ignore-next-line
+         */
         switch ($routed[0]) {
             case \FastRoute\Dispatcher::METHOD_NOT_ALLOWED:
                 throw new \RuntimeException('405');
@@ -223,6 +228,11 @@ class App extends \Illuminate\Container\Container
         return $runner($request);
     }
 
+    /**
+     * @param \Next\Http\Response|\Next\Http\JsonResponse|\Next\Http\RedirectResponse|\Next\Http\RequestMethodNegotiator|\Next\Http\ResponseTypeNegotiator $response
+     *
+     * @return \Next\Http\Response|\Next\Http\JsonResponse|\Next\Http\RedirectResponse|string
+     */
     private function negotiate(\Next\Http\Request $request, mixed $response): mixed
     {
         if ($response instanceof \Next\Http\RequestMethodNegotiator) {

@@ -4,29 +4,31 @@ namespace Next\Http;
 
 class ResponseTypeNegotiator
 {
-    /** @var array<string, \Closure> */
+    /**
+     * @var array<string, \Closure>
+     */
     private array $handlers = [];
 
     private ?\Closure $default = null;
 
-    public function __call(string $method, array $arguments): self
+    /**
+     * @param array<int, mixed> $params
+     */
+    public function __call(string $method, array $params): self
     {
-        $this->when($method, array_shift($arguments));
-
+        $this->when($method, array_shift($params));
         return $this;
     }
 
     public function when(string $extension, \Closure $handler): self
     {
         $this->handlers[$extension] = $handler;
-
         return $this;
     }
 
     public function default(\Closure $handler): self
     {
         $this->default = $handler;
-
         return $this;
     }
 

@@ -24,7 +24,10 @@ if (!function_exists('request')) {
 }
 
 if (!function_exists('response')) {
-    function response(string $content = null): \Next\Http\Response
+    /**
+     * @return \Next\Http\Response|\Next\Http\JsonResponse|\Next\Http\RedirectResponse
+     */
+    function response(string $content = null): mixed
     {
         if ($content) {
             return \Next\Http\Response::create($content);

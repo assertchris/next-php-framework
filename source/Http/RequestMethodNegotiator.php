@@ -4,7 +4,9 @@ namespace Next\Http;
 
 class RequestMethodNegotiator
 {
-    /** @var array<string, \Closure> */
+    /**
+     * @var array<string, ?\Closure>
+     */
     protected array $handlers = [
         'GET' => null,
         'POST' => null,
@@ -27,7 +29,6 @@ class RequestMethodNegotiator
     private function when(string $method, \Closure $handler): mixed
     {
         $this->handlers[strtoupper($method)] = $handler;
-
         return $this;
     }
 
@@ -85,7 +86,6 @@ class RequestMethodNegotiator
     public function default(\Closure $handler): mixed
     {
         $this->default = $handler;
-
         return $this;
     }
 
