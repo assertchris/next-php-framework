@@ -197,7 +197,7 @@ class App extends \Illuminate\Container\Container
             return $this->negotiate($request, $last($request));
         }
 
-        $terminator = function (\Next\Http\Request $request) use ($last): \Next\Http\Response|\Next\Http\JsonResponse|\Next\Http\RedirectResponse|string {
+        $terminator = function (\Next\Http\Request $request) use ($last): \Next\Http\Response|\Next\Http\JsonResponse|\Next\Http\RedirectResponse {
             $response = $this->negotiate($request, $last($request));
 
             if (
