@@ -4,10 +4,7 @@ namespace Next\Http;
 
 class JsonResponse extends \Illuminate\Http\JsonResponse
 {
-    /**
-     * @return static
-     */
-    public function json()
+    public function json(): static
     {
         return $this;
     }

@@ -23,67 +23,43 @@ class RequestMethodNegotiator
         $this->when('options', fn() => $this->defaultOptionsHandler());
     }
 
-    /**
-     * @return static
-     */
-    private function when(string $method, \Closure $handler): mixed
+    private function when(string $method, \Closure $handler): static
     {
         $this->handlers[strtoupper($method)] = $handler;
         return $this;
     }
 
-    /**
-     * @return static
-     */
-    public function get(\Closure $handler): mixed
+    public function get(\Closure $handler): static
     {
         return $this->when('get', $handler);
     }
 
-    /**
-     * @return static
-     */
-    public function post(\Closure $handler): mixed
+    public function post(\Closure $handler): static
     {
         return $this->when('post', $handler);
     }
 
-    /**
-     * @return static
-     */
-    public function patch(\Closure $handler): mixed
+    public function patch(\Closure $handler): static
     {
         return $this->when('patch', $handler);
     }
 
-    /**
-     * @return static
-     */
-    public function put(\Closure $handler): mixed
+    public function put(\Closure $handler): static
     {
         return $this->when('put', $handler);
     }
 
-    /**
-     * @return static
-     */
-    public function delete(\Closure $handler): mixed
+    public function delete(\Closure $handler): static
     {
         return $this->when('delete', $handler);
     }
 
-    /**
-     * @return static
-     */
-    public function options(\Closure $handler): mixed
+    public function options(\Closure $handler): static
     {
         return $this->when('options', $handler);
     }
 
-    /**
-     * @return static
-     */
-    public function default(\Closure $handler): mixed
+    public function default(\Closure $handler): static
     {
         $this->default = $handler;
         return $this;
@@ -92,7 +68,7 @@ class RequestMethodNegotiator
     /**
      * @return \Next\Http\Response|\Next\Http\JsonResponse|\Next\Http\RedirectResponse
      */
-    private function defaultOptionsHandler(): mixed
+    private function defaultOptionsHandler(): Response|JsonResponse|RedirectResponse
     {
         return response()
             ->setStatusCode(204)

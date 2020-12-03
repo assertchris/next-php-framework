@@ -14,7 +14,9 @@ class Runner
     private \Closure $final;
 
     /**
+     * @param \Next\App       $app
      * @param array<callable> $middleware
+     * @param \Closure        $final
      */
     public function __construct(\Next\App $app, array $middleware, \Closure $final)
     {
@@ -23,10 +25,7 @@ class Runner
         $this->final = $final;
     }
 
-    /**
-     * @return \Next\Http\Response|\Next\Http\JsonResponse|\Next\Http\RedirectResponse
-     */
-    public function __invoke(\Next\Http\Request $request): mixed
+    public function __invoke(\Next\Http\Request $request): \Next\Http\Response|\Next\Http\JsonResponse|\Next\Http\RedirectResponse
     {
         if (empty($this->middleware)) {
             return ($this->final)($request);

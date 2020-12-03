@@ -12,7 +12,9 @@ class ResponseTypeNegotiator
     private ?\Closure $default = null;
 
     /**
+     * @param string $method
      * @param array<int, mixed> $params
+     * @return \Next\Http\ResponseTypeNegotiator
      */
     public function __call(string $method, array $params): self
     {

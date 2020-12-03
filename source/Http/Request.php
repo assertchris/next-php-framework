@@ -10,20 +10,20 @@ class Request extends \Illuminate\Http\Request
     /**
      * @var \Symfony\Component\HttpFoundation\ParameterBag<string, mixed>
      */
-    protected $params;
+    protected \Symfony\Component\HttpFoundation\ParameterBag $params;
 
     /**
      * @param array<string, mixed> $params
      *
      * @return static
      */
-    public function setParams(array $params)
+    public function setParams(array $params): static
     {
         $this->params = new \Symfony\Component\HttpFoundation\ParameterBag($params);
         return $this;
     }
 
-    public function getParams(): mixed
+    public function getParams(): \Symfony\Component\HttpFoundation\ParameterBag
     {
         return $this->params;
     }
@@ -53,7 +53,7 @@ class Request extends \Illuminate\Http\Request
     /**
      * @return string|null
      */
-    public function getPathInfoExtension(): mixed
+    public function getPathInfoExtension(): ?string
     {
         return strtolower(pathinfo(parse_url($this->url(), PHP_URL_PATH), PATHINFO_EXTENSION));
     }

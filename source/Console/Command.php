@@ -33,10 +33,7 @@ abstract class Command extends \Symfony\Component\Console\Command\Command
         return (int) $this->app->call([$this, 'handle']);
     }
 
-    /**
-     * @return static
-     */
-    public function setApp(\Next\App $app)
+    public function setApp(\Next\App $app): static
     {
         $this->app = $app;
         return $this;
@@ -47,7 +44,7 @@ abstract class Command extends \Symfony\Component\Console\Command\Command
         return $this->input->hasArgument($name);
     }
 
-    protected function argument(string $key): mixed
+    protected function argument(string $key): null|array|string
     {
         return $this->input->getArgument($key);
     }
@@ -65,7 +62,7 @@ abstract class Command extends \Symfony\Component\Console\Command\Command
         return $this->input->hasOption($name);
     }
 
-    protected function option(string $name): mixed
+    protected function option(string $name): null|bool|array|string
     {
         return $this->input->getOption($name);
     }

@@ -56,10 +56,7 @@ class App extends \Illuminate\Container\Container
         }
     }
 
-    /**
-     * @return \Next\Http\Response|\Next\Http\JsonResponse|\Next\Http\RedirectResponse
-     */
-    public function serve(\Next\Http\Request $request = null): mixed
+    public function serve(\Next\Http\Request $request = null): \Next\Http\Response|\Next\Http\JsonResponse|\Next\Http\RedirectResponse
     {
         $request = $request ?? \Next\Http\Request::capture();
         $response = \Next\Http\Response::create();
@@ -80,10 +77,7 @@ class App extends \Illuminate\Container\Container
         return $this->route($request);
     }
 
-    /**
-     * @return \Next\Http\Response|\Next\Http\JsonResponse|\Next\Http\RedirectResponse
-     */
-    private function route(\Next\Http\Request $request): mixed
+    private function route(\Next\Http\Request $request): \Next\Http\Response|\Next\Http\JsonResponse|\Next\Http\RedirectResponse
     {
         $path = path('pages');
         $allFiles = files($path);
@@ -197,19 +191,13 @@ class App extends \Illuminate\Container\Container
         }
     }
 
-    /**
-     * @return \Next\Http\Response|\Next\Http\JsonResponse|\Next\Http\RedirectResponse
-     */
-    private function applyMiddleware(\Next\Http\Request $request, \Closure $last): mixed
+    private function applyMiddleware(\Next\Http\Request $request, \Closure $last): \Next\Http\Response|\Next\Http\JsonResponse|\Next\Http\RedirectResponse|string
     {
         if (!isset($this['config']['middleware']) || empty($this['config']['middleware'])) {
             return $this->negotiate($request, $last($request));
         }
 
-        /**
-         * @return \Next\Http\Response|\Next\Http\JsonResponse|\Next\Http\RedirectResponse
-         */
-        $terminator = function (\Next\Http\Request $request) use ($last): mixed {
+        $terminator = function (\Next\Http\Request $request) use ($last): \Next\Http\Response|\Next\Http\JsonResponse|\Next\Http\RedirectResponse|string {
             $response = $this->negotiate($request, $last($request));
 
             if (
@@ -229,11 +217,11 @@ class App extends \Illuminate\Container\Container
     }
 
     /**
+     * @param \Next\Http\Request                                                                                                                           $request
      * @param \Next\Http\Response|\Next\Http\JsonResponse|\Next\Http\RedirectResponse|\Next\Http\RequestMethodNegotiator|\Next\Http\ResponseTypeNegotiator $response
-     *
      * @return \Next\Http\Response|\Next\Http\JsonResponse|\Next\Http\RedirectResponse|string
      */
-    private function negotiate(\Next\Http\Request $request, mixed $response): mixed
+    private function negotiate(\Next\Http\Request $request, mixed $response): \Next\Http\Response|\Next\Http\JsonResponse|\Next\Http\RedirectResponse|string
     {
         if ($response instanceof \Next\Http\RequestMethodNegotiator) {
             return $this->negotiate($request, $response->negotiate($request->getMethod()));

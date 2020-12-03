@@ -8,7 +8,7 @@ class SafeErrorJsonHandler
     {
         $app = \Next\App::getInstance();
 
-        if ($exception->getMessage() === '404' || $exception->getMessage() === '405') {
+        if (in_array($exception->getMessage(), ['404', '405'])) {
             $this->showSafeErrorJson($app, (int) $exception->getMessage());
             return;
         }

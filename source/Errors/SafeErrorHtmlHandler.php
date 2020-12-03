@@ -8,7 +8,7 @@ class SafeErrorHtmlHandler
     {
         $app = \Next\App::getInstance();
 
-        if ($exception->getMessage() === '404' || $exception->getMessage() === '405') {
+        if (in_array($exception->getMessage(), ['404', '405'])) {
             $this->showSafeErrorHtml($app, (int) $exception->getMessage());
             return;
         }

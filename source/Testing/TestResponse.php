@@ -16,10 +16,7 @@ class TestResponse
         $this->baseResponse = $response;
     }
 
-    /**
-     * @return static
-     */
-    public static function fromBaseResponse(\Next\Http\Response $response): mixed
+    public static function fromBaseResponse(\Next\Http\Response $response): static
     {
         /**
          * @phpstan-ignore-next-line
@@ -29,10 +26,10 @@ class TestResponse
 
     /**
      * @param string|array<string> $value
-     *
+     * @param bool                 $escape
      * @return static
      */
-    public function assertSee(mixed $value, bool $escape = true): mixed
+    public function assertSee(mixed $value, bool $escape = true): static
     {
         $value = is_array($value) ? $value : [$value];
 
@@ -46,11 +43,11 @@ class TestResponse
     }
 
     /**
-     * @param array<string, mixed> $data
-     *
+     * @param array $data
+     * @param bool  $strict
      * @return static
      */
-    public function assertJson(array $data, bool $strict = false): mixed
+    public function assertJson(array $data, bool $strict = false): static
     {
         \PHPUnit\Framework\Assert::assertEquals($data, json_decode($this->getContent()));
 
@@ -58,9 +55,11 @@ class TestResponse
     }
 
     /**
+     * @param string     $headerName
+     * @param mixed|null $value
      * @return static
      */
-    public function assertHeader(string $headerName, mixed $value = null): mixed
+    public function assertHeader(string $headerName, mixed $value = null): static
     {
         \PHPUnit\Framework\Assert::assertTrue(
             $this->headers->has($headerName),
@@ -91,7 +90,9 @@ class TestResponse
     }
 
     /**
-     * @param array<int, mixed> $params
+     * @param string $method
+     * @param array  $params
+     * @return mixed
      */
     public function __call(string $method, array $params): mixed
     {

@@ -6,6 +6,7 @@ class Response extends \Illuminate\Http\Response
 {
     /**
      * @param array<mixed> $params
+     * @return \Next\Http\JsonResponse
      */
     public function json(...$params): \Next\Http\JsonResponse
     {

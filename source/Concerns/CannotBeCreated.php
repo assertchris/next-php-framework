@@ -9,10 +9,7 @@ trait CannotBeCreated
      */
     private static $instance;
 
-    /**
-     * @return static
-     */
-    public static function getInstance()
+    public static function getInstance(): static
     {
         if (!isset(static::$instance)) {
             /**
