@@ -1,5 +1,7 @@
 <?php
 
+beforeAll(fn () => static::$pagesPath = __DIR__ . '/contentNegotiationPages');
+
 it('returns HTML content when using .html extension')
     ->get('/api/nomadic-content-negotiation.html')
     ->assertSee('<h1>HTML Content</h1>', false);

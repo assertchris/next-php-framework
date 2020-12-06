@@ -146,55 +146,42 @@ class App extends \Illuminate\Container\Container
 
         $routed = $dispatcher->dispatch($httpMethod, $httpPath);
 
-        /**
-         * stan doesn't see that the default case will throw...
-         *
-         * @phpstan-ignore-next-line
-         */
-        switch ($routed[0]) {
-            case \FastRoute\Dispatcher::METHOD_NOT_ALLOWED:
-                throw new \RuntimeException('405');
+        return match ($routed[0]) {
+            \FastRoute\Dispatcher::METHOD_NOT_ALLOWED => throw new \RuntimeException('405'),
+            \FastRoute\Dispatcher::FOUND => $this->dispatch($request, $routed, $path),
+            default => throw new \RuntimeException('404'),
+        };
+    }
 
-            case \FastRoute\Dispatcher::FOUND:
-                $request->setParams($routed[2]);
+    /**
+     * @return \Next\Http\Response|\Next\Http\JsonResponse|\Next\Http\RedirectResponse
+     */
+    private function dispatch(\Next\Http\Request $request, array $routed, string $path): mixed
+    {
+        $request->setParams($routed[2]);
 
-                if ($routed[1]['type'] === 'api') {
-                    $response = $routed[1]['factory']();
+        $response = $routed[1]['factory']();
 
-                    if (is_string($response)) {
-                        $response = \Next\Http\Response::create($response);
-                    }
-
-                    return $response;
-                }
-
-                if ($routed[1]['type'] === 'page') {
-                    $baseResponse = $routed[1]['factory']();
-
-                    if (is_file("{$path}/_document.php")) {
-                        $document = require "{$path}/_document.php";
-                        $layoutResponse = $document($request, $baseResponse->getContent());
-
-                        if (is_string($layoutResponse)) {
-                            $layoutResponse = \Next\Http\Response::create($layoutResponse);
-                            $layoutResponse->headers->add($baseResponse->headers->all());
-                        }
-
-                        return $layoutResponse;
-                    }
-
-                    if (is_string($baseResponse)) {
-                        $baseResponse = \Next\Http\Response::create($baseResponse);
-                    }
-
-                    return $baseResponse;
-                }
-
-                break;
-
-            default:
-                throw new \RuntimeException('404');
+        if (is_string($response)) {
+            $response = \Next\Http\Response::create($response);
         }
+
+        if ($routed[1]['type'] === 'page' && is_file("{$path}/_document.php")) {
+            $document = require "{$path}/_document.php";
+
+            $originalResponse = $response;
+            $response = $this->call($document, [
+                $response,
+                'content' => $response->getContent(),
+            ]);
+
+            if (is_string($response)) {
+                $response = new \Next\Http\Response($response);
+                $response->headers->add($originalResponse->headers->all());
+            }
+        }
+
+        return $response;
     }
 
     /**
