@@ -58,6 +58,27 @@ test('cache can remember', function () use ($defaults) {
     $this->assertEquals($cache->get('i-can-remember'), null);
 });
 
+test('cache remember only calls closure once', function () use ($defaults) {
+    $app = new \Next\App($defaults);
+
+    $cache = $app[\Next\Cache::class];
+
+    $closure = $this
+        ->getMockBuilder(\stdClass::class)
+        ->addMethods(['__invoke'])
+        ->getMock();
+
+    $closure
+        ->expects($this->once())
+        ->method('__invoke')
+        ->willReturn('i can remember');
+
+    $cache->remember('i-only-get-called-once', $closure, 1);
+
+    $this->assertEquals('i can remember', $cache->remember('i-only-get-called-once', $closure, 1));
+    $this->assertEquals('i can remember', $cache->remember('i-only-get-called-once', $closure, 1));
+});
+
 test('cache can remember forever', function () use ($defaults) {
     $app = new \Next\App($defaults);
 
