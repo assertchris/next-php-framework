@@ -70,9 +70,14 @@ class Proxy
         return $default;
     }
 
-    public function remember(string $key, \Closure $factory, int $seconds = null): mixed
+    public function remember(string $key, callable $factory, int $seconds = null): mixed
     {
+        if ($this->has($key)) {
+            return $this->get($key);
+        }
+
         $this->store($key, $value = $factory(), $seconds);
+
         return $value;
     }
 
