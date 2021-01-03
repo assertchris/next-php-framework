@@ -10,9 +10,16 @@ class TestCase extends \PHPUnit\Framework\TestCase
     {
         $this->app = new \Next\App([
             'paths' => [
-                'pages' => __DIR__ . '/pages',
+                'pages' => \org\bovigo\vfs\vfsStream::url('pages'),
             ],
         ]);
+    }
+
+    public function withPages(array $pages): self
+    {
+        \org\bovigo\vfs\vfsStream::setup('pages', null, $pages);
+
+        return $this;
     }
 
     private function handle(string $method, string $uri, array $parameters = []): \Next\Testing\TestResponse

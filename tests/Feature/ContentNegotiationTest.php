@@ -1,5 +1,34 @@
 <?php
 
+beforeEach(fn () => $this->withPages([
+    'api' => [
+        'nomadic-content-negotiation.php' => "
+            <?php
+            return function () {
+                return request()
+                    ->when()
+                    ->get(fn() => response()
+                        ->for()
+                        ->html(fn() => '<h1>HTML Content</h1>')
+                        ->json(fn() => json_encode([
+                            'hello' => 'world',
+                       ]))
+                    )
+                    ->post(fn() => 'POST handler');
+            };
+        ",
+        'nomadic-content-negotiation-with-defaults.php' => "
+            <?php
+            return function () {
+                return request()
+                    ->when()
+                    ->get(fn () => response()->for()->default(fn () => 'default content'))
+                    ->default(fn () => 'default handler');
+            };
+        ",
+    ],
+]));
+
 it('returns HTML content when using .html extension')
     ->get('/api/nomadic-content-negotiation.html')
     ->assertSee('<h1>HTML Content</h1>', false);
