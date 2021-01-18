@@ -6,6 +6,8 @@ class TestCase extends \PHPUnit\Framework\TestCase
 {
     protected \Next\App $app;
 
+    public static string $pagesPath = __DIR__ . '/contentNegotiationPages';
+
     protected function setUp(): void
     {
         $this->app = new \Next\App([
