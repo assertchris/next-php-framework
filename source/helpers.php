@@ -50,6 +50,10 @@ if (!function_exists('files')) {
      */
     function files(string $folder, string $extension = 'php'): array
     {
+        if (is_dir($folder) === false) {
+            return [];
+        }
+
         $directory = new RecursiveDirectoryIterator($folder);
         $iterator = new RecursiveIteratorIterator($directory);
 

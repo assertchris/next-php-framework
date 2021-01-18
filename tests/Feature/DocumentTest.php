@@ -1,6 +1,9 @@
 <?php
 
-beforeAll(fn () => static::$pagesPath = __DIR__ . '/documentTestPages');
+beforeEach(fn () => $this->withPages([
+    '_document.php' => '<?php return fn ($content) => "Document content; " . $content;',
+    'string-response.php' => '<?php return fn () => "String content";',
+]));
 
 it('wraps string content')
     ->get('/string-response')
