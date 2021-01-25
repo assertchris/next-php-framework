@@ -80,6 +80,19 @@ class TestResponse
         return $this;
     }
 
+    public function assertStatus(int $expectedStatus): self
+    {
+        $actualStatus = $this->getStatusCode();
+
+        \PHPUnit\Framework\Assert::assertSame(
+            $expectedStatus,
+            $actualStatus,
+            "Status [{$expectedStatus}] does not match actual status [{$actualStatus}].",
+        );
+
+        return $this;
+    }
+
     public function __get(string $key): mixed
     {
         return $this->baseResponse->{$key};

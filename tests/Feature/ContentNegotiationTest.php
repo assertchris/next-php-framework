@@ -41,15 +41,13 @@ it('calls POST handler')
     ->post('/api/nomadic-content-negotiation')
     ->assertSee('POST handler');
 
-// TODO: we should get a 405 error instead.
 it('throws exception by default when method not negotiated')
-    ->expectException(\RuntimeException::class)
-    ->delete('/api/nomadic-content-negotiation');
+    ->delete('/api/nomadic-content-negotiation')
+    ->assertStatus(405);
 
-// TODO: we should get a 415 error instead.
 it('throws exception by default when content type is not negotiated')
-    ->expectException(\RuntimeException::class)
-    ->get('/api/nomadic-content-negotiation.pdf');
+    ->get('/api/nomadic-content-negotiation.pdf')
+    ->assertStatus(415);
 
 it('calls default handler when method not negotiated')
     ->post('/api/nomadic-content-negotiation-with-defaults')

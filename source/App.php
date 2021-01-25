@@ -90,11 +90,19 @@ class App extends \Illuminate\Container\Container
         $apiFiles = files("{$path}/api");
         $pageFiles = array_diff($allFiles, $apiFiles);
 
+        $errors = [
+            '_404' => fn() => \Next\Http\Response::create('Not found.', 404),
+            '_405' => fn() => \Next\Http\Response::create('Method not allowed.', 405),
+            '_415' => fn() => \Next\Http\Response::create('Content type not supported.', 415),
+            '_500' => fn() => \Next\Http\Response::create('Something went wrong.', 500),
+        ];
+
         $dispatcher = \FastRoute\simpleDispatcher(function (\FastRoute\RouteCollector $collector) use (
             $request,
             $path,
             $apiFiles,
-            $pageFiles
+            $pageFiles,
+            &$errors,
         ) {
             foreach ($apiFiles as $apiFile) {
                 if (!is_file($apiFile)) {
@@ -123,12 +131,16 @@ class App extends \Illuminate\Container\Container
                     continue;
                 }
 
-                if (str_starts_with($pageFile, '_')) {
-                    continue;
-                }
-
                 $pageFilePath = str_replace($path, '', dirname($pageFile));
                 $pageFileName = basename($pageFile, '.php');
+
+                if (str_starts_with($pageFileName, '_')) {
+                    if (array_key_exists($pageFileName, $errors)) {
+                        $errors[$pageFileName] = require $pageFile;
+                    }
+
+                    continue;
+                }
 
                 if ($pageFileName === 'index') {
                     $pageFileName = '';
@@ -146,11 +158,19 @@ class App extends \Illuminate\Container\Container
 
         $routed = $dispatcher->dispatch($httpMethod, $httpPath);
 
-        return match ($routed[0]) {
-            \FastRoute\Dispatcher::METHOD_NOT_ALLOWED => throw new \RuntimeException('405'),
-            \FastRoute\Dispatcher::FOUND => $this->dispatch($request, $routed, $path),
-            default => throw new \RuntimeException('404'),
-        };
+        try {
+            return match ($routed[0]) {
+                \FastRoute\Dispatcher::METHOD_NOT_ALLOWED => $this->call($errors['_405']),
+                \FastRoute\Dispatcher::FOUND => $this->dispatch($request, $routed, $path),
+                default => $this->call($errors['_404']),
+            };
+        } catch (\Next\Http\MissingContentNegotiator) {
+            return $this->call($errors['_405']);
+        } catch (\Next\Http\UnsupportedContentType) {
+            return $this->call($errors['_415']);
+        } catch (\Throwable) {
+            return $this->call($errors['_500']);
+        }
     }
 
     /**

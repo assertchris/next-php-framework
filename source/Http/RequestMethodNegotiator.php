@@ -99,6 +99,9 @@ class RequestMethodNegotiator
             ->header('Allow', implode(', ', array_keys(array_filter($this->handlers))));
     }
 
+    /**
+     * @throws MissingContentNegotiator
+     */
     public function negotiate(string $method): mixed
     {
         $method = strtoupper($method);
@@ -111,6 +114,6 @@ class RequestMethodNegotiator
             return ($this->default)();
         }
 
-        throw new \RuntimeException("No content negotiator for {$method}");
+        throw MissingContentNegotiator::forMethod($method);
     }
 }

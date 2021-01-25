@@ -32,6 +32,9 @@ class ResponseTypeNegotiator
         return $this;
     }
 
+    /**
+     * @throws UnsupportedContentType
+     */
     public function negotiate(string $extension): mixed
     {
         if (array_key_exists($extension, $this->handlers)) {
@@ -42,6 +45,6 @@ class ResponseTypeNegotiator
             return ($this->default)();
         }
 
-        throw new \RuntimeException("File extension {$extension} not supported");
+        throw UnsupportedContentType::forFileType($extension);
     }
 }
